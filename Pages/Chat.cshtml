@@ -1,0 +1,31 @@
+@page
+@model ChatModel
+@{
+    ViewData["Title"] = "Chat";
+}
+
+<div class="container mt-4">
+    <h2>AI Academic Advisor Chat</h2>
+    
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Chat Interface</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chat-messages" style="height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px;">
+                        <p class="text-muted">Start chatting with the AI Academic Advisor...</p>
+                    </div>
+                    
+                    <form>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Type your message...">
+                            <button class="btn btn-primary" type="submit">Send</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
