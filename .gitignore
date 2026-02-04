@@ -1,0 +1,16 @@
+﻿# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+
+# Sensitive files - DO NOT COMMIT
+appsettings.json
+appsettings.*.json
+launchSettings.json
