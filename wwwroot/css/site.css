@@ -1,0 +1,18 @@
+/* Basic styles for AI Academic Advisor */
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+.card {
+    border: 1px solid #ddd;
+    transition: box-shadow 0.3s;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+footer {
+    margin-top: auto;
+}

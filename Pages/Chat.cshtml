@@ -1,0 +1,35 @@
+@page
+@model ChatModel
+@{
+    ViewData["Title"] = "AI Advisor";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-3">AI Academic Advisor</h2>
+
+    <div class="card">
+        <div class="card-body">
+
+            @if (!string.IsNullOrEmpty(Model.AiResponse))
+            {
+                <div class="alert alert-secondary">
+                    <strong>AI Advisor:</strong><br />
+                    @Model.AiResponse
+                </div>
+            }
+
+            <form method="post">
+                <div class="input-group">
+                    <input asp-for="UserMessage"
+                           class="form-control"
+                           placeholder="Ask a question about courses, careers, or school..."
+                           autocomplete="off" />
+                    <button class="btn btn-primary" type="submit">
+                        Ask
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>

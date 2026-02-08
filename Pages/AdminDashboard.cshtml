@@ -1,0 +1,47 @@
+@page
+@model AdminDashboardModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h2>Admin Dashboard</h2>
+    
+    <div class="row mt-4">
+        <!-- Uploads Section -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Uploads</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Upload File</label>
+                            <input type="file" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-success">Upload</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Student Lookup Section -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Student Lookup</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Student ID</label>
+                            <input type="text" class="form-control" placeholder="Enter student ID">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
