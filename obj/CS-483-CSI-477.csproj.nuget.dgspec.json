@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Brian\\source\\repos\\Ai Advisor\\CS-483-CSI-477\\CS-483-CSI-477.csproj": {}
+    "C:\\Users\\Brian\\source\\repos\\CS-483-CSI-477\\CS-483-CSI-477.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Brian\\source\\repos\\Ai Advisor\\CS-483-CSI-477\\CS-483-CSI-477.csproj": {
+    "C:\\Users\\Brian\\source\\repos\\CS-483-CSI-477\\CS-483-CSI-477.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Brian\\source\\repos\\Ai Advisor\\CS-483-CSI-477\\CS-483-CSI-477.csproj",
+        "projectUniqueName": "C:\\Users\\Brian\\source\\repos\\CS-483-CSI-477\\CS-483-CSI-477.csproj",
         "projectName": "CS-483-CSI-477",
-        "projectPath": "C:\\Users\\Brian\\source\\repos\\Ai Advisor\\CS-483-CSI-477\\CS-483-CSI-477.csproj",
+        "projectPath": "C:\\Users\\Brian\\source\\repos\\CS-483-CSI-477\\CS-483-CSI-477.csproj",
         "packagesPath": "C:\\Users\\Brian\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Brian\\source\\repos\\Ai Advisor\\CS-483-CSI-477\\obj\\",
+        "outputPath": "C:\\Users\\Brian\\source\\repos\\CS-483-CSI-477\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -26,7 +26,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -45,11 +44,17 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "MySql.Data": {
+              "target": "Package",
+              "version": "[9.6.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -69,7 +74,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.309/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
