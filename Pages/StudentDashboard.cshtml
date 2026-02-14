@@ -16,7 +16,7 @@
                 </div>
                 <div class="card-body">
                     <p>Chat with AI Academic Advisor</p>
-                    <a href="/Chat" class="btn btn-primary">Start Chat</a>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#disclaimerModal">Start Chat</button>
                 </div>
             </div>
         </div>
@@ -46,3 +46,26 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Disclaimer Modal -->
+<div class="modal fade" id="disclaimerModal" tabindex="-1" aria-labelledby="disclaimerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="disclaimerModalLabel">Chat Disclaimer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Please Note:</strong></p>
+                <p>This session will be logged and will be seen by your advisor.</p>
+                <p>By proceeding, you acknowledge and agree to this policy.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="/Chat" class="btn btn-primary">I Understand, Continue</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,7 +1,5 @@
 is_global = true
 build_property.TargetFramework = net9.0
-build_property.TargetFrameworkIdentifier = .NETCoreApp
-build_property.TargetFrameworkVersion = v9.0
 build_property.TargetPlatformMinVersion = 
 build_property.UsingMicrosoftNETSdkWeb = true
 build_property.ProjectTypeGuids = 
@@ -11,61 +9,61 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = CS_483_CSI_477
 build_property.RootNamespace = CS_483_CSI_477
-build_property.ProjectDir = C:\Users\Brian\source\repos\CS-483-CSI-477\
+build_property.ProjectDir = C:\Users\Brian\Source\Repos\CS-483-CSI-477\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 9.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\Brian\source\repos\CS-483-CSI-477
+build_property.MSBuildProjectDirectory = C:\Users\Brian\Source\Repos\CS-483-CSI-477
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 9.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/Brian/source/repos/CS-483-CSI-477/Pages/AdminDashboard.cshtml]
+[C:/Users/Brian/Source/Repos/CS-483-CSI-477/Pages/AdminDashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5EYXNoYm9hcmQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Brian/source/repos/CS-483-CSI-477/Pages/Chat.cshtml]
+[C:/Users/Brian/Source/Repos/CS-483-CSI-477/Pages/Chat.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2hhdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Brian/source/repos/CS-483-CSI-477/Pages/Error.cshtml]
+[C:/Users/Brian/Source/Repos/CS-483-CSI-477/Pages/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Brian/source/repos/CS-483-CSI-477/Pages/Index.cshtml]
+[C:/Users/Brian/Source/Repos/CS-483-CSI-477/Pages/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Brian/source/repos/CS-483-CSI-477/Pages/Planner.cshtml]
+[C:/Users/Brian/Source/Repos/CS-483-CSI-477/Pages/Planner.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGxhbm5lci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Brian/source/repos/CS-483-CSI-477/Pages/Privacy.cshtml]
+[C:/Users/Brian/Source/Repos/CS-483-CSI-477/Pages/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJpdmFjeS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Brian/source/repos/CS-483-CSI-477/Pages/Progress.cshtml]
+[C:/Users/Brian/Source/Repos/CS-483-CSI-477/Pages/Progress.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZ3Jlc3MuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Brian/source/repos/CS-483-CSI-477/Pages/Shared/_ValidationScriptsPartial.cshtml]
+[C:/Users/Brian/Source/Repos/CS-483-CSI-477/Pages/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Brian/source/repos/CS-483-CSI-477/Pages/StudentDashboard.cshtml]
+[C:/Users/Brian/Source/Repos/CS-483-CSI-477/Pages/StudentDashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3R1ZGVudERhc2hib2FyZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Brian/source/repos/CS-483-CSI-477/Pages/_ViewImports.cshtml]
+[C:/Users/Brian/Source/Repos/CS-483-CSI-477/Pages/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Brian/source/repos/CS-483-CSI-477/Pages/_ViewStart.cshtml]
+[C:/Users/Brian/Source/Repos/CS-483-CSI-477/Pages/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Brian/source/repos/CS-483-CSI-477/Pages/Shared/_Layout.cshtml]
+[C:/Users/Brian/Source/Repos/CS-483-CSI-477/Pages/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-0fbmydc9qi
