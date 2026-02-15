@@ -4,96 +4,203 @@
     ViewData["Title"] = "Course Planner";
 }
 
-<div class="container mt-4">
-    <h2>Course Planner</h2>
-    <p class="text-muted">Plan your academic courses semester by semester</p>
-
-    <div class="row mt-4">
-        <!-- Planner Controls -->
-        <div class="col-md-12 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Planner Tools</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <label for="studentId" class="form-label">Student ID</label>
-                            <input type="text" class="form-control" id="studentId" placeholder="Enter student ID">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="majorSelect" class="form-label">Major</label>
-                            <select class="form-select" id="majorSelect">
-                                <option selected>Select major</option>
-                                <option value="cs">Computer Science</option>
-                                <option value="math">Mathematics</option>
-                                <option value="engineering">Engineering</option>
-                                <option value="business">Business</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="startYear" class="form-label">Start Year</label>
-                            <input type="number" class="form-control" id="startYear" placeholder="2024" value="2024">
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button class="btn btn-primary w-100">Load Plan</button>
-                        </div>
-                    </div>
+<div class="container mt-4 fade-in-up">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">
+                <div class="card-body p-4">
+                    <h2 class="mb-2">
+                        <i class="bi bi-calendar-check-fill me-3"></i>Course Planner
+                    </h2>
+                    <p class="lead mb-0">
+                        <i class="bi bi-person-circle me-2"></i>@Model.StudentName
+                        <span class="ms-3">
+                            <i class="bi bi-mortarboard-fill me-2"></i>@Model.Major
+                        </span>
+                    </p>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Academic Plan -->
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5>Academic Plan</h5>
-                    <div>
-                        <button class="btn btn-success btn-sm me-2">Save Plan</button>
-                        <button class="btn btn-secondary btn-sm">Export PDF</button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <!-- Year 1 -->
-                    <div class="mb-4">
-                        <h5 class="mb-3">Year 1 (2024-2025)</h5>
-                        <div class="row">
-                            <!-- Fall Semester -->
-                            <div class="col-md-6 mb-3">
-                                <div class="card border-primary">
-                                    <div class="card-header bg-primary text-white">
-                                        <h6 class="mb-0">Fall 2024</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="badge bg-secondary">Total Credits: 0</span>
-                                            <button class="btn btn-sm btn-outline-primary">Add Course</button>
-                                        </div>
-                                        <div class="alert alert-light" role="alert">
-                                            No courses planned yet
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+    <!-- 4-Year Plan Grid -->
+    <h4 class="mb-3">
+        <i class="bi bi-calendar3 me-2"></i>Your 4-Year Plan
+    </h4>
+    <div class="row g-4 mb-5">
+        @for (int i = 0; i < Model.Semesters.Count; i++)
+        {
+            var semester = Model.Semesters[i];
+            var yearLabel = (i / 2) + 1;
+            var isFall = semester.Term == "Fall";
+            var borderColor = isFall ? "#2563eb" : "#10b981";
+            var gradientStart = isFall ? "#2563eb" : "#10b981";
+            var gradientEnd = isFall ? "#1e40af" : "#059669";
 
-                            <!-- Spring Semester -->
-                            <div class="col-md-6 mb-3">
-                                <div class="card border-success">
-                                    <div class="card-header bg-success text-white">
-                                        <h6 class="mb-0">Spring 2025</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="badge bg-secondary">Total Credits: 0</span>
-                                            <button class="btn btn-sm btn-outline-success">Add Course</button>
-                                        </div>
-                                        <div class="alert alert-light" role="alert">
-                                            No courses planned yet
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid @borderColor !important;">
+                    <div class="card-header text-white" style="background: linear-gradient(135deg, @gradientStart 0%, @gradientEnd 100%);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold">
+                                <i class="bi bi-@(isFall ? "calendar-fill" : "calendar-event") me-2"></i>
+                                Year @yearLabel - @semester.Term @semester.Year
+                            </h6>
+                            <span class="badge bg-white" style="color: @borderColor;">
+                                <i class="bi bi-clock me-1"></i>@semester.TotalCredits credits
+                            </span>
                         </div>
                     </div>
+                    <div class="card-body">
+                        @if (semester.Courses.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var course in semester.Courses)
+                                {
+                                    <div class="list-group-item px-0 border-bottom @(course.IsCompleted ? "bg-light" : "")">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">
+                                                    <i class="bi bi-book me-2" style="color: @borderColor;"></i>
+                                                    <strong>@course.CourseCode</strong>
+                                                    @if (course.IsCompleted)
+                                                    {
+                                                        <span class="badge bg-success ms-2">
+                                                            <i class="bi bi-check-circle-fill me-1"></i>Completed
+                                                        </span>
+                                                    }
+                                                </h6>
+                                                <p class="mb-0 small text-muted">@course.CourseName</p>
+                                            </div>
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi bi-clock me-1"></i>@course.CreditHours hrs
+                                            </span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-light border mb-0 text-center" role="alert">
+                                <i class="bi bi-inbox" style="font-size: 2rem; color: #d1d5db;"></i>
+                                <p class="small text-muted mb-0 mt-2">No courses planned yet</p>
+                            </div>
+                        }
+                    </div>
+                    <div class="card-footer bg-white border-top">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>Total:</strong> @semester.Courses.Count course(s), @semester.TotalCredits credit(s)
+                        </small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 
-                   
+    <!-- Available Courses Section -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header text-white" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+            <h5 class="mb-0">
+                <i class="bi bi-plus-circle-fill me-2"></i>Available Courses to Add
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info border-0 mb-3">
+                <i class="bi bi-lightbulb-fill me-2"></i>
+                These are courses you haven't taken or planned yet.
+                <em>Full planning functionality coming soon!</em>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead style="background: linear-gradient(135deg, #1f2937 0%, #374151 100%); color: white;">
+                        <tr>
+                            <th class="py-3">
+                                <i class="bi bi-hash me-2"></i>Course Code
+                            </th>
+                            <th class="py-3">
+                                <i class="bi bi-book me-2"></i>Course Name
+                            </th>
+                            <th class="py-3">
+                                <i class="bi bi-clock me-2"></i>Credits
+                            </th>
+                            <th class="py-3">
+                                <i class="bi bi-building me-2"></i>Department
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.AvailableCourses != null && Model.AvailableCourses.Rows.Count > 0)
+                        {
+                            @foreach (System.Data.DataRow row in Model.AvailableCourses.Rows)
+                            {
+                                <tr>
+                                    <td class="align-middle">
+                                        <strong class="text-primary">@row["CourseCode"]</strong>
+                                    </td>
+                                    <td class="align-middle">@row["CourseName"]</td>
+                                    <td class="align-middle">
+                                        <span class="badge bg-light text-dark border">
+                                            @row["CreditHours"] hrs
+                                        </span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="badge" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);">
+                                            @row["Department"]
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                    <p class="mt-2 mb-0">No available courses found.</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Planning Tips -->
+    <div class="card border-0 shadow-sm mt-4" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);">
+        <div class="card-body">
+            <h6 class="mb-3">
+                <i class="bi bi-lightbulb-fill me-2 text-primary"></i>
+                <strong>Planning Tips</strong>
+            </h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Aim for 12-18 credits per semester (15 is typical)
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Check prerequisites before planning courses
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Balance difficult courses with easier ones each semester
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            Courses marked with ✓ are already completed
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
