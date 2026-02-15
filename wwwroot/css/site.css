@@ -1,18 +1,355 @@
-/* Basic styles for AI Academic Advisor */
+/* ========================================
+   CUSTOM THEME - Academic Advising Chatbot
+   ======================================== */
+
+:root {
+    --primary-color: #2563eb;
+    --primary-dark: #1e40af;
+    --secondary-color: #10b981;
+    --accent-color: #f59e0b;
+    --danger-color: #ef4444;
+    --dark-text: #1f2937;
+    --light-text: #6b7280;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* ========================================
+   GLOBAL STYLES
+   ======================================== */
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--dark-text);
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+    min-height: 100vh;
 }
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: var(--dark-text);
+}
+
+/* ========================================
+   NAVIGATION BAR
+   ======================================== */
+
+.navbar {
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: white !important;
+    transition: transform 0.2s;
+}
+
+    .navbar-brand:hover {
+        transform: scale(1.05);
+    }
+
+.navbar-light .navbar-nav .nav-link {
+    color: rgba(255,255,255,0.9) !important;
+    font-weight: 500;
+    margin: 0 0.5rem;
+    transition: all 0.3s;
+    position: relative;
+}
+
+    .navbar-light .navbar-nav .nav-link:hover {
+        color: white !important;
+        transform: translateY(-2px);
+    }
+
+    .navbar-light .navbar-nav .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: white;
+        transition: all 0.3s;
+        transform: translateX(-50%);
+    }
+
+    .navbar-light .navbar-nav .nav-link:hover::after {
+        width: 80%;
+    }
+
+/* ========================================
+   CARDS
+   ======================================== */
 
 .card {
-    border: 1px solid #ddd;
-    transition: box-shadow 0.3s;
+    border: none;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    background: white;
 }
 
-.card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    .card:hover {
+        box-shadow: var(--card-shadow-hover);
+        transform: translateY(-4px);
+    }
+
+.card-header {
+    border: none;
+    font-weight: 600;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
 }
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+.btn {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 0.625rem 1.5rem;
+    transition: all 0.3s;
+    border: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+}
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(37, 99, 235, 0.35);
+    }
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);
+}
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(16, 185, 129, 0.35);
+    }
+
+.btn-info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
+}
+
+    .btn-info:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(59, 130, 246, 0.35);
+    }
+
+.btn-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    box-shadow: 0 4px 6px rgba(245, 158, 11, 0.25);
+}
+
+    .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(245, 158, 11, 0.35);
+    }
+
+/* ========================================
+   PROGRESS BARS
+   ======================================== */
+
+.progress {
+    height: 24px;
+    border-radius: 12px;
+    background: #e5e7eb;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.progress-bar {
+    border-radius: 12px;
+    background: linear-gradient(90deg, var(--secondary-color) 0%, #059669 100%);
+    font-weight: 600;
+    transition: width 0.6s ease;
+}
+
+/* ========================================
+   BADGES
+   ======================================== */
+
+.badge {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+    .badge.bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+
+    .badge.bg-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    }
+
+    .badge.bg-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    }
+
+/* ========================================
+   TABLES
+   ======================================== */
+
+.table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+    .table thead {
+        background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+        color: white;
+    }
+
+.table-hover tbody tr:hover {
+    background-color: #f3f4f6;
+    transform: scale(1.01);
+    transition: all 0.2s;
+}
+
+/* ========================================
+   STAT CARDS
+   ======================================== */
+
+.stat-card {
+    border-left: 4px solid var(--primary-color);
+    transition: all 0.3s;
+}
+
+    .stat-card:hover {
+        border-left-width: 8px;
+    }
+
+    .stat-card h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0.5rem 0;
+    }
+
+    .stat-card h6 {
+        color: var(--light-text);
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+    }
+
+/* ========================================
+   ALERTS
+   ======================================== */
+
+.alert {
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    box-shadow: var(--card-shadow);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    color: #1e40af;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #92400e;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #991b1b;
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
 
 footer {
-    margin-top: auto;
+    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+    color: rgba(255,255,255,0.8);
+    padding: 2rem 0;
+    margin-top: 4rem;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* ========================================
+   FORM CONTROLS
+   ======================================== */
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e5e7eb;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s;
+}
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+.form-label {
+    font-weight: 600;
+    color: var(--dark-text);
+    margin-bottom: 0.5rem;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.shadow-sm {
+    box-shadow: var(--card-shadow) !important;
+}
+
+.shadow {
+    box-shadow: var(--card-shadow-hover) !important;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
