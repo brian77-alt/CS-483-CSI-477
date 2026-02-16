@@ -1,35 +1,103 @@
 @page
-@model ChatModel
+@model CS_483_CSI_477.Pages.ChatModel
 @{
-    ViewData["Title"] = "AI Advisor";
+    ViewData["Title"] = "AI Academic Advisor";
 }
 
-<div class="container mt-5">
-    <h2 class="mb-3">AI Academic Advisor</h2>
-
-    <div class="card">
-        <div class="card-body">
-
-            @if (!string.IsNullOrEmpty(Model.AiResponse))
-            {
-                <div class="alert alert-secondary">
-                    <strong>AI Advisor:</strong><br />
-                    @Model.AiResponse
-                </div>
-            }
-
-            <form method="post">
-                <div class="input-group">
-                    <input asp-for="UserMessage"
-                           class="form-control"
-                           placeholder="Ask a question about courses, careers, or school..."
-                           autocomplete="off" />
-                    <button class="btn btn-primary" type="submit">
-                        Ask
-                    </button>
-                </div>
-            </form>
-
-        </div>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>AI Academic Advisor</h2>
+        <form method="post" asp-page-handler="ClearHistory">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">Clear History</button>
+        </form>
     </div>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @Model.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    <!-- PDF Indicator (Add this after the error message block) -->
+    @if (!string.IsNullOrEmpty(Model.PdfFileName))
+    {
+        <div class="alert alert-success mb-3">
+            <strong>?? Academic Plan Loaded:</strong> @Model.PdfFileName
+            <form method="post" asp-page-handler="RemovePdf" style="display: inline; float: right;">
+                <button type="submit" class="btn btn-sm btn-danger">Remove PDF</button>
+            </form>
+        </div>
+    }
+    <!-- Chat History -->
+    <div class="chat-container mb-4" style="max-height: 500px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px; padding: 15px; background-color: #f8f9fa;">
+        @if (Model.ChatHistory != null && Model.ChatHistory.Any())
+        {
+            foreach (var message in Model.ChatHistory)
+            {
+                @if (message.Role == "system")
+                {
+                    <div class="alert alert-info py-2 px-3 mb-2">
+                        <small><em>@message.Content</em></small>
+                    </div>
+                }
+                else if (message.Role == "user")
+                {
+                    <div class="d-flex justify-content-end mb-3">
+                        <div class="card" style="max-width: 70%; background-color: #007bff; color: white;">
+                            <div class="card-body py-2 px-3">
+                                <strong>You:</strong> @message.Content
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (message.Role == "assistant")
+                {
+                    <div class="d-flex justify-content-start mb-3">
+                        <div class="card" style="max-width: 70%; background-color: white;">
+                            <div class="card-body py-2 px-3">
+                                <strong>AI Advisor:</strong> @message.Content
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        }
+        else
+        {
+            <div class="text-center text-muted py-5">
+                <p>No messages yet. Start a conversation!</p>
+            </div>
+        }
+    </div>
+
+    <!-- Input Form -->
+    <form method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Upload Academic Plan PDF (Optional)</label>
+            <input type="file" name="UploadedPdf" class="form-control" accept=".pdf" />
+            <small class="form-text text-muted">Upload your academic plan for personalized advice</small>
+        </div>
+
+        <div class="input-group">
+            <input asp-for="UserMessage"
+                   class="form-control"
+                   placeholder="Ask about your courses, plan, or degree requirements..."
+                   autocomplete="off"
+                   required />
+            <button class="btn btn-primary" type="submit">
+                <i class="bi bi-send"></i> Ask
+            </button>
+        </div>
+    </form>
 </div>
+
+<script>
+    // Auto-scroll to bottom of chat
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatContainer = document.querySelector('.chat-container');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    });
+</script>
