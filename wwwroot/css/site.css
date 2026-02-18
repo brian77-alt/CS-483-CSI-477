@@ -353,3 +353,48 @@ footer {
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
+
+/* ========================================
+   CHAT PAGE STYLES
+   ======================================== */
+
+.chat-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.chat-messages {
+    height: 500px;
+    overflow-y: auto;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+}
+
+.message {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    max-width: 80%;
+}
+
+    .message.user {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        color: white;
+        margin-left: auto;
+    }
+
+    .message.assistant {
+        background: #f3f4f6;
+        color: var(--dark-text);
+    }
+
+.chat-input-area {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+}

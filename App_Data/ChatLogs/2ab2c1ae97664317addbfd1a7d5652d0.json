@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "Hi",
+    "Timestamp": "2026-02-15T15:55:12.7947842-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Hi there! I\u0027m happy to help you navigate your academic journey.\n\nWhat can I assist you with today? Are you looking to review your academic plan, discuss course options, or perhaps have some general questions about your studies? Feel free to share your academic plan (if you have it as a PDF, I can help analyze it!), or just tell me what\u0027s on your mind.",
+    "Timestamp": "2026-02-15T15:55:14.5442607-06:00"
+  }
+]

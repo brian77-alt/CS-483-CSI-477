@@ -1,0 +1,22 @@
+[
+  {
+    "Role": "user",
+    "Content": "hello",
+    "Timestamp": "2026-02-15T15:55:43.7617908-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Hi there! I\u0027m your AI Academic Advisor, ready to help you navigate your college journey. Whether you\u0027ve got a PDF plan you\u0027d like me to look over, or just some general questions about courses and academic planning, feel free to ask.\n\nI\u0027m here to offer friendly, encouraging, and actionable advice. What can I help you with today?",
+    "Timestamp": "2026-02-15T15:55:44.7572021-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "what else can you do?",
+    "Timestamp": "2026-02-15T15:55:54.1475755-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Great question! Besides helping you break down your academic plan from a PDF, here\u0027s what else I can assist you with:\n\n*   **Course Selection:** Help you think through which courses might be best for your goals, interests, or to fulfill specific requirements.\n*   **Major/Minor Exploration:** Discuss potential pathways, what different fields entail, and how to explore them.\n*   **Time Management \u0026 Study Tips:** Offer advice on balancing your workload, managing deadlines, and effective study strategies.\n*   **Academic Planning Strategies:** Help you think long-term about your degree, potential internships, or graduate school preparation.\n*   **General Academic Advice:** Answer questions about academic policies (in general terms), how to approach professors, or finding resources.\n\nEssentially, I\u0027m here to be a sounding board and provide guidance to help you make informed decisions about your academic path. What\u0027s on your mind?",
+    "Timestamp": "2026-02-15T15:55:56.346286-06:00"
+  }
+]

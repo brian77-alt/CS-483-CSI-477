@@ -1,0 +1,47 @@
+[
+  {
+    "Role": "system",
+    "Content": "?? Academic plan loaded: Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf",
+    "Timestamp": "2026-02-15T16:02:28.8110565-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "from this pdf can you help choose classes for me? ",
+    "Timestamp": "2026-02-15T16:02:28.8174247-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Hey there! I\u0027d be absolutely happy to help you map out your next steps in your Computer Science major! This PDF is super helpful for understanding the program requirements.\n\nTo give you the best advice and suggest a smart next-semester schedule, I need a little more information about *your* journey so far. Could you please tell me which courses you\u0027ve already completed from this list?\n\nOnce I know what you\u0027ve taken, I can help you:\n*   **Summarize** what you\u0027ve completed versus what\u0027s still remaining.\n*   **Identify** any prerequisite issues to watch out for.\n*   **Suggest** a great schedule for your next semester.\n*   **Warn** you about potential overloads or tricky course sequencing.\n\nLooking forward to helping you plan a successful semester! Just let me know what you\u0027ve finished up. \uD83D\uDE0A",
+    "Timestamp": "2026-02-15T16:02:33.8655655-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "I have completed CS 215, 258 and math 230 from the pdf",
+    "Timestamp": "2026-02-15T16:03:47.1534211-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Hey there! Awesome, thanks for letting me know what you\u0027ve completed! That gives us a great starting point.\n\nLet\u0027s break down your academic plan:\n\n**Summary of Your Progress:**",
+    "Timestamp": "2026-02-15T16:03:54.0157098-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "so what are the next classes should I choose?",
+    "Timestamp": "2026-02-15T16:04:13.8842394-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Okay, fantastic! Thanks for sharing that. Knowing you\u0027ve completed **CS 215 (Discrete Structures)**, **CS 258 (Intro to OOP)**, and **",
+    "Timestamp": "2026-02-15T16:04:20.156249-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "what are the next classes to choose for me?",
+    "Timestamp": "2026-02-15T16:04:43.504783-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Alright, let\u0027s get you set up for a fantastic next semester! Knowing you\u0027ve completed **CS 215 (Discrete Structures)**, **CS 258 (",
+    "Timestamp": "2026-02-15T16:04:49.8634091-06:00"
+  }
+]
