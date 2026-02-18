@@ -14,6 +14,7 @@ namespace CS_483_CSI_477.Services
     public class FileChatLogStore : IChatLogStore
     {
         private readonly string _baseDir;
+        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         public FileChatLogStore(IWebHostEnvironment env)
         {
@@ -28,14 +29,21 @@ namespace CS_483_CSI_477.Services
             var path = PathFor(chatId);
             if (!File.Exists(path)) return new List<ChatMessage>();
 
+            await _semaphore.WaitAsync();
             try
             {
-                var json = await File.ReadAllTextAsync(path);
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                using var reader = new StreamReader(stream);
+                var json = await reader.ReadToEndAsync();
                 return JsonSerializer.Deserialize<List<ChatMessage>>(json) ?? new List<ChatMessage>();
             }
             catch
             {
                 return new List<ChatMessage>();
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
@@ -43,14 +51,38 @@ namespace CS_483_CSI_477.Services
         {
             var path = PathFor(chatId);
             var json = JsonSerializer.Serialize(messages, new JsonSerializerOptions { WriteIndented = true });
-            await File.WriteAllTextAsync(path, json);
+
+            await _semaphore.WaitAsync();
+            try
+            {
+                using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+                using var writer = new StreamWriter(stream);
+                await writer.WriteAsync(json);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
-        public Task ClearAsync(string chatId)
+        public async Task ClearAsync(string chatId)
         {
             var path = PathFor(chatId);
-            if (File.Exists(path)) File.Delete(path);
-            return Task.CompletedTask;
+
+            await _semaphore.WaitAsync();
+            try
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+
+            await Task.CompletedTask;
         }
     }
 }

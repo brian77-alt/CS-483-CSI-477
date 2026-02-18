@@ -1,284 +1,254 @@
-<<<<<<< HEAD
-using Microsoft.AspNetCore.Mvc.RazorPages;
-=======
+using AdvisorDb;
+using Google.Cloud.AIPlatform.V1;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Text.Json;
->>>>>>> ai-advisor-chat
 
-namespace CS_483_CSI_477.Pages;
-
-public class ChatModel : PageModel
+namespace CS_483_CSI_477.Pages
 {
-<<<<<<< HEAD
-    public void OnGet()
+    public class ChatMessage
     {
-    }
-}
-=======
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<ChatModel> _logger;
-    private readonly IChatLogStore _chatLogStore;
-
-    public ChatModel(
-        IHttpClientFactory httpClientFactory,
-        IConfiguration configuration,
-        ILogger<ChatModel> logger,
-        IChatLogStore chatLogStore)
-    {
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
-        _logger = logger;
-        _chatLogStore = chatLogStore;
+        public string Role { get; set; } = "";
+        public string Content { get; set; } = "";
+        public DateTime Timestamp { get; set; } = DateTime.Now;
     }
 
-    [BindProperty] public string UserMessage { get; set; } = "";
-    [BindProperty] public IFormFile UploadedPdf { get; set; }
-
-    public string ErrorMessage { get; set; }
-    public List<ChatMessage> ChatHistory { get; set; } = new();
-
-    public string PdfFileName { get; set; }
-
-    private const string PDF_FILENAME_KEY = "PdfFileName";
-    private const string PDF_BYTES_KEY = "PdfBytesBase64";
-
-    // identify a "user" without auth: stable per browser via session
-    private string ChatId
+    public class ChatModel : PageModel
     {
-        get
+        private readonly IConfiguration _configuration;
+        private readonly DatabaseHelper _dbHelper;
+        private readonly Services.IChatLogStore _chatLogStore;
+        private readonly ILogger<ChatModel> _logger;
+
+        public List<ChatMessage> Messages { get; set; } = new();
+        public string ChatId { get; set; } = "";
+
+        [BindProperty]
+        public string UserMessage { get; set; } = "";
+
+        public ChatModel(
+            IConfiguration configuration,
+            DatabaseHelper dbHelper,
+            Services.IChatLogStore chatLogStore,
+            ILogger<ChatModel> logger)
         {
-            const string key = "ChatId";
-            var existing = HttpContext.Session.GetString(key);
-            if (!string.IsNullOrEmpty(existing)) return existing;
-
-            var id = Guid.NewGuid().ToString("N");
-            HttpContext.Session.SetString(key, id);
-            return id;
+            _configuration = configuration;
+            _dbHelper = dbHelper;
+            _chatLogStore = chatLogStore;
+            _logger = logger;
         }
-    }
 
-    private static readonly string SystemPrompt = @"You are an AI Academic Advisor helping college students with their academic planning and course decisions.
-
-Be friendly, encouraging, and provide actionable advice. Keep responses concise but helpful.
-
-When a student provides a PDF academic plan:
-- summarize completed vs remaining requirements
-- identify prerequisite issues
-- suggest a smart next-semester schedule
-- warn about overload / sequencing problems
-
-If the student asks general questions, answer normally.";
-
-    public async Task OnGetAsync()
-    {
-        ChatHistory = await _chatLogStore.LoadAsync(ChatId);
-        PdfFileName = HttpContext.Session.GetString(PDF_FILENAME_KEY);
-    }
-
-    public async Task<IActionResult> OnPostAsync()
-    {
-        ChatHistory = await _chatLogStore.LoadAsync(ChatId);
-        PdfFileName = HttpContext.Session.GetString(PDF_FILENAME_KEY);
-
-        // 1) If PDF uploaded, store its bytes in session (base64) so we can reuse it in later messages
-        if (UploadedPdf != null && UploadedPdf.Length > 0)
+        public async Task OnGetAsync()
         {
+            ChatId = HttpContext.Session.GetString("ChatId") ?? Guid.NewGuid().ToString("N");
+            HttpContext.Session.SetString("ChatId", ChatId);
+            Messages = await _chatLogStore.LoadAsync(ChatId);
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            ChatId = HttpContext.Session.GetString("ChatId") ?? Guid.NewGuid().ToString("N");
+            HttpContext.Session.SetString("ChatId", ChatId);
+            Messages = await _chatLogStore.LoadAsync(ChatId);
+
+            if (string.IsNullOrWhiteSpace(UserMessage))
+            {
+                return Page();
+            }
+
+            Messages.Add(new ChatMessage
+            {
+                Role = "user",
+                Content = UserMessage,
+                Timestamp = DateTime.Now
+            });
+
             try
             {
-                using var ms = new MemoryStream();
-                await UploadedPdf.CopyToAsync(ms);
-                var base64 = Convert.ToBase64String(ms.ToArray());
-
-                HttpContext.Session.SetString(PDF_BYTES_KEY, base64);
-                HttpContext.Session.SetString(PDF_FILENAME_KEY, UploadedPdf.FileName);
-                PdfFileName = UploadedPdf.FileName;
-
-                ChatHistory.Add(new ChatMessage
+                var aiResponse = await GetGeminiResponseAsync(UserMessage);
+                Messages.Add(new ChatMessage
                 {
-                    Role = "system",
-                    Content = $"?? Academic plan loaded: {UploadedPdf.FileName}"
+                    Role = "assistant",
+                    Content = aiResponse,
+                    Timestamp = DateTime.Now
                 });
-
-                await _chatLogStore.SaveAsync(ChatId, ChatHistory);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reading PDF");
-                ErrorMessage = "Error processing PDF file. Please try another PDF.";
-                return Page();
-            }
-        }
-
-        if (string.IsNullOrWhiteSpace(UserMessage))
-            return Page();
-
-        var apiKey = _configuration["Gemini:ApiKey"];
-        if (string.IsNullOrWhiteSpace(apiKey))
-        {
-            ErrorMessage = "Gemini API key is not configured.";
-            return Page();
-        }
-
-        ChatHistory.Add(new ChatMessage { Role = "user", Content = UserMessage });
-
-        try
-        {
-            var aiText = await CallGeminiAsync(apiKey, UserMessage);
-
-            ChatHistory.Add(new ChatMessage { Role = "assistant", Content = aiText });
-            await _chatLogStore.SaveAsync(ChatId, ChatHistory);
-
-            UserMessage = "";
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Gemini call failed");
-            ErrorMessage = ex.Message;
-
-            // remove last user msg (optional)
-            if (ChatHistory.Count > 0 && ChatHistory.Last().Role == "user")
-                ChatHistory.RemoveAt(ChatHistory.Count - 1);
-
-            await _chatLogStore.SaveAsync(ChatId, ChatHistory);
-        }
-
-        return Page();
-    }
-
-    private async Task<string> CallGeminiAsync(string apiKey, string userText)
-    {
-        // IMPORTANT: v1beta + a model that exists for your key
-        // Docs show v1beta + gemini-2.5-flash. :contentReference[oaicite:3]{index=3}
-        var model = _configuration["Gemini:Model"] ?? "gemini-2.5-flash";
-        var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
-
-        var client = _httpClientFactory.CreateClient();
-        client.Timeout = TimeSpan.FromSeconds(60);
-
-        // Build "contents" as real chat turns (better than stuffing everything into one text prompt)
-        var contents = new List<object>();
-
-        // System instruction as first turn
-        contents.Add(new
-        {
-            role = "user",
-            parts = new[] { new { text = SystemPrompt } }
-        });
-
-        // If we have a PDF stored, attach it as inline_data (Gemini supports PDF input). :contentReference[oaicite:4]{index=4}
-        var pdfBase64 = HttpContext.Session.GetString(PDF_BYTES_KEY);
-        if (!string.IsNullOrEmpty(pdfBase64))
-        {
-            contents.Add(new
-            {
-                role = "user",
-                parts = new object[]
+                _logger.LogError(ex, "Error getting AI response");
+                Messages.Add(new ChatMessage
                 {
-                    new { text = "Here is the student's academic plan PDF. Use it as context when answering." },
-                    new
+                    Role = "assistant",
+                    Content = "I apologize, but I'm having trouble processing your request right now. Please try again later.",
+                    Timestamp = DateTime.Now
+                });
+            }
+
+            await _chatLogStore.SaveAsync(ChatId, Messages);
+            UserMessage = "";
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostClearAsync()
+        {
+            ChatId = HttpContext.Session.GetString("ChatId") ?? "";
+            if (!string.IsNullOrEmpty(ChatId))
+            {
+                await _chatLogStore.ClearAsync(ChatId);
+            }
+            HttpContext.Session.Remove("ChatId");
+            return RedirectToPage();
+        }
+
+        private async Task<string> GetGeminiResponseAsync(string userMessage)
+        {
+            var apiKey = _configuration["Gemini:ApiKey"];
+            var model = _configuration["Gemini:Model"] ?? "gemini-2.0-flash-exp";
+
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new InvalidOperationException("Gemini API key not configured");
+            }
+
+            var systemPrompt = await BuildSystemPromptAsync();
+            var conversationHistory = BuildConversationHistory();
+
+            var client = new PredictionServiceClientBuilder
+            {
+                Endpoint = "us-central1-aiplatform.googleapis.com",
+                JsonCredentials = JsonSerializer.Serialize(new
+                {
+                    type = "authorized_user",
+                    client_id = "fake",
+                    client_secret = "fake",
+                    refresh_token = "fake"
+                })
+            }.Build();
+
+            var request = new GenerateContentRequest
+            {
+                Model = $"projects/gemini-api-experimental/locations/us-central1/publishers/google/models/{model}",
+                Contents =
+                {
+                    new Content
                     {
-                        inline_data = new
+                        Role = "user",
+                        Parts = { new Part { Text = systemPrompt + "\n\n" + conversationHistory + "\n\nUser: " + userMessage } }
+                    }
+                }
+            };
+
+            try
+            {
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
+
+                var jsonRequest = JsonSerializer.Serialize(new
+                {
+                    contents = new[]
+                    {
+                        new
                         {
-                            mime_type = "application/pdf",
-                            data = pdfBase64
+                            role = "user",
+                            parts = new[] { new { text = systemPrompt + "\n\n" + conversationHistory + "\n\nUser: " + userMessage } }
+                        }
+                    },
+                    generationConfig = new
+                    {
+                        temperature = 0.7,
+                        topP = 0.95,
+                        topK = 40,
+                        maxOutputTokens = 2048
+                    }
+                });
+
+                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+                var response = await httpClient.PostAsync(
+                    $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                    content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Gemini API error: {StatusCode} - {Error}", response.StatusCode, errorContent);
+                    throw new Exception($"Gemini API error: {response.StatusCode}");
+                }
+
+                var responseJson = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(responseJson);
+                var root = doc.RootElement;
+
+                if (root.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
+                {
+                    var firstCandidate = candidates[0];
+                    if (firstCandidate.TryGetProperty("content", out var contentElement))
+                    {
+                        if (contentElement.TryGetProperty("parts", out var parts) && parts.GetArrayLength() > 0)
+                        {
+                            var firstPart = parts[0];
+                            if (firstPart.TryGetProperty("text", out var text))
+                            {
+                                return text.GetString() ?? "I couldn't generate a response.";
+                            }
                         }
                     }
                 }
-            });
-        }
 
-        // Add last N chat turns (skip system)
-        foreach (var msg in ChatHistory.Where(m => m.Role != "system").TakeLast(10))
-        {
-            var role = msg.Role == "assistant" ? "model" : "user";
-            contents.Add(new
-            {
-                role,
-                parts = new[] { new { text = msg.Content } }
-            });
-        }
-
-        // Add current user question
-        contents.Add(new
-        {
-            role = "user",
-            parts = new[] { new { text = userText } }
-        });
-
-        var requestBody = new
-        {
-            contents,
-            generationConfig = new
-            {
-                temperature = 0.6,
-                topP = 0.95,
-                maxOutputTokens = 1024
+                return "I couldn't generate a response. Please try again.";
             }
-        };
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling Gemini API");
+                throw;
+            }
+        }
 
-        var json = JsonSerializer.Serialize(requestBody);
-        var resp = await client.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
-        var respText = await resp.Content.ReadAsStringAsync();
-
-        if (!resp.IsSuccessStatusCode)
+        private async Task<string> BuildSystemPromptAsync()
         {
-            // include the API message if possible
+            var sb = new StringBuilder();
+            sb.AppendLine("You are an academic advisor AI for the University of Southern Indiana (USI).");
+            sb.AppendLine("You help students with degree planning, course selection, and academic questions.");
+            sb.AppendLine();
+            sb.AppendLine("Available degree programs and requirements:");
+            sb.AppendLine();
+
             try
             {
-                using var doc = JsonDocument.Parse(respText);
-                var msg = doc.RootElement.GetProperty("error").GetProperty("message").GetString();
-                throw new Exception($"Gemini API error: {msg}");
+                var degreeQuery = "SELECT DegreeName, DegreeCode, TotalCreditsRequired FROM DegreePrograms WHERE IsActive = 1";
+                var degrees = _dbHelper.ExecuteQuery(degreeQuery, out _);
+
+                if (degrees != null)
+                {
+                    foreach (System.Data.DataRow row in degrees.Rows)
+                    {
+                        sb.AppendLine($"- {row["DegreeName"]} ({row["DegreeCode"]}): {row["TotalCreditsRequired"]} credits");
+                    }
+                }
+
+                sb.AppendLine();
+                sb.AppendLine("Be helpful, friendly, and provide accurate academic guidance based on the data above.");
             }
-            catch
+            catch (Exception ex)
             {
-                throw new Exception($"Gemini API error ({resp.StatusCode}).");
+                _logger.LogWarning(ex, "Could not load degree programs for system prompt");
             }
+
+            return sb.ToString();
         }
 
-        using (var doc = JsonDocument.Parse(respText))
+        private string BuildConversationHistory()
         {
-            // response: candidates[0].content.parts[0].text
-            var root = doc.RootElement;
-
-            if (!root.TryGetProperty("candidates", out var candidates) || candidates.GetArrayLength() == 0)
-                return "I couldn't generate a response. Try rephrasing your question.";
-
-            var parts = candidates[0].GetProperty("content").GetProperty("parts");
-            if (parts.GetArrayLength() == 0) return "No response generated.";
-
-            return parts[0].GetProperty("text").GetString() ?? "No response generated.";
+            var sb = new StringBuilder();
+            foreach (var msg in Messages.TakeLast(10))
+            {
+                if (msg.Role == "user")
+                    sb.AppendLine($"User: {msg.Content}");
+                else if (msg.Role == "assistant")
+                    sb.AppendLine($"Assistant: {msg.Content}");
+            }
+            return sb.ToString();
         }
     }
-
-    public async Task<IActionResult> OnPostClearHistoryAsync()
-    {
-        HttpContext.Session.Remove(PDF_BYTES_KEY);
-        HttpContext.Session.Remove(PDF_FILENAME_KEY);
-
-        await _chatLogStore.ClearAsync(ChatId);
-        return RedirectToPage();
-    }
-
-    public async Task<IActionResult> OnPostRemovePdfAsync()
-    {
-        HttpContext.Session.Remove(PDF_BYTES_KEY);
-        HttpContext.Session.Remove(PDF_FILENAME_KEY);
-
-        ChatHistory = await _chatLogStore.LoadAsync(ChatId);
-        ChatHistory.Add(new ChatMessage { Role = "system", Content = "?? PDF removed." });
-        await _chatLogStore.SaveAsync(ChatId, ChatHistory);
-
-        return RedirectToPage();
-    }
 }
-
-public class ChatMessage
-{
-    public string Role { get; set; } = "";   // "user", "assistant", "system"
-    public string Content { get; set; } = "";
-    public DateTime Timestamp { get; set; } = DateTime.Now;
-}
->>>>>>> ai-advisor-chat

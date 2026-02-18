@@ -1,5 +1,6 @@
 using AdvisorDb;
 using CS_483_CSI_477.Services;
+using System.Runtime.Intrinsics.Arm;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,14 @@ builder.Services.AddHttpContextAccessor();
 
 // Register chat log store
 builder.Services.AddSingleton<IChatLogStore, FileChatLogStore>();
+
+// Add session support for chat
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 // Configure Kestrel server limits for file uploads
 builder.WebHost.ConfigureKestrel(serverOptions =>
@@ -46,6 +55,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseSession();
 
 app.UseRouting();
 
