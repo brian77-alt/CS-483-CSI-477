@@ -62,6 +62,13 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+// Redirect root to login page
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/Login");
+    return Task.CompletedTask;
+});
+
 app.MapRazorPages();
 
 app.Run();

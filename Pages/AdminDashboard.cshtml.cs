@@ -44,15 +44,28 @@ public class AdminDashboardModel : PageModel
     [BindProperty]
     public string DocDescription { get; set; } = string.Empty;
 
-    // Constructor: DatabaseHelper and IConfiguration injected via DI
     public AdminDashboardModel(DatabaseHelper dbHelper, IConfiguration config)
     {
         _dbHelper = dbHelper;
         _config = config;
     }
 
-    public void OnGet()
+    public IActionResult OnGet()
     {
+        // Redirect to login if not authenticated
+        if (!HttpContext.Session.GetInt32("AdminID").HasValue)
+        {
+            return RedirectToPage("/Login");
+        }
+
+        // Check if user is admin
+        string role = HttpContext.Session.GetString("Role") ?? "";
+        if (role != "Admin")
+        {
+            return RedirectToPage("/StudentDashboard");
+        }
+
+        // Test connection and load data
         IsConnected = _dbHelper.TestConnection(out string error);
         ConnectionMessage = IsConnected ? "✓ Database connected successfully" : "";
         ErrorMessage = IsConnected ? "" : $"Database connection failed: {error}";
@@ -62,6 +75,8 @@ public class AdminDashboardModel : PageModel
             LoadBulletins();
             LoadDocuments();
         }
+
+        return Page();
     }
 
     // ----------------------------------------
@@ -84,10 +99,10 @@ public class AdminDashboardModel : PageModel
         }
 
         string query = $@"
-            SELECT s.StudentIDNumber, s.FirstName, s.LastName, s.Email,
+            SELECT s.StudentID, s.FirstName, s.LastName, s.Email,
                    s.Major, s.CurrentGPA, s.TotalCreditsEarned, s.EnrollmentStatus
             FROM Students s
-            WHERE s.StudentIDNumber = '{MySqlEscape(StudentId)}'
+            WHERE s.StudentID = '{MySqlEscape(StudentId)}'
                OR s.Email = '{MySqlEscape(StudentId)}'
             LIMIT 10";
 
@@ -235,7 +250,7 @@ public class AdminDashboardModel : PageModel
             string fileUrl;
 
             if (string.IsNullOrEmpty(azureConnStr) ||
-                azureConnStr == "PASTE_YOUR_AZURE_CONNECTION_STRING_HERE")
+                azureConnStr == "PASTE_AZURE_KEY_HERE")
             {
                 fileUrl = await SaveLocalAsync(file, "documents", DocType.ToLower());
             }

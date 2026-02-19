@@ -1,0 +1,116 @@
+﻿@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AI Academic Advisor</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); min-height: 100vh; display: flex; align-items: center;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <!-- Hero Section -->
+                <div class="text-center text-white mb-4">
+                    <i class="bi bi-robot" style="font-size: 4rem;"></i>
+                    <h1 class="display-4 fw-bold mt-3">AI Academic Advisor</h1>
+                    <p class="lead">Your personalized degree planning assistant powered by AI</p>
+                </div>
+
+                <div class="card shadow-lg border-0" style="border-radius: 20px;">
+                    <div class="card-body p-5">
+                        <div class="row">
+                            <!-- Left: Features -->
+                            <div class="col-md-6 border-end">
+                                <h4 class="mb-4">What You Can Do</h4>
+                                <div class="mb-3">
+                                    <i class="bi bi-bar-chart-line-fill text-primary me-2"></i>
+                                    <strong>Track Your Progress</strong>
+                                    <p class="small text-muted ms-4">Monitor degree completion and requirements</p>
+                                </div>
+                                <div class="mb-3">
+                                    <i class="bi bi-calendar-check-fill text-success me-2"></i>
+                                    <strong>Plan Your Courses</strong>
+                                    <p class="small text-muted ms-4">Organize classes semester by semester</p>
+                                </div>
+                                <div class="mb-3">
+                                    <i class="bi bi-chat-dots-fill text-info me-2"></i>
+                                    <strong>Get AI Guidance</strong>
+                                    <p class="small text-muted ms-4">Ask questions about courses and requirements</p>
+                                </div>
+                            </div>
+
+                            <!-- Right: Login Form -->
+                            <div class="col-md-6">
+                                <h4 class="mb-4">Login</h4>
+
+                                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                                {
+                                    <div class="alert alert-danger">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>@Model.ErrorMessage
+                                    </div>
+                                }
+
+                                <form method="post">
+                                    <div class="mb-3">
+                                        <label asp-for="StudentID" class="form-label">
+                                            <i class="bi bi-person-badge me-1"></i>Student ID or Username
+                                        </label>
+                                        <input asp-for="StudentID"
+                                               class="form-control form-control-lg"
+                                               placeholder="Enter your Student ID or username"
+                                               autofocus />
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label asp-for="Password" class="form-label">
+                                            <i class="bi bi-lock me-1"></i>Password
+                                        </label>
+                                        <input asp-for="Password"
+                                               type="password"
+                                               class="form-control form-control-lg"
+                                               placeholder="Enter your password" />
+                                    </div>
+
+                                    <button type="submit"
+                                            class="btn btn-primary btn-lg w-100"
+                                            style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                                    </button>
+                                </form>
+
+                                <div class="text-center mt-4">
+                                    <small class="text-muted">
+                                        <i class="bi bi-shield-check me-1"></i>
+                                        Your session is secure and private
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demo Credentials -->
+                <div class="text-center mt-4 text-white">
+                    <small>
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Demo:</strong> Student ID: 1 / Password: password123 | Admin: admin / admin123
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
