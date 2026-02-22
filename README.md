@@ -3,7 +3,7 @@ Senior Software Development Projects - Ai Academic Advisor
 
 # 1 ensure you are in the correct address 
 
-## 2 Create "new" appsettings.json
+# 2 Create "new" appsettings.json
 
 # **IMPORTANT** This file is NOT in Git for security reasons. You must create it manually.
 # NEVER commit appsettings.json to Git
