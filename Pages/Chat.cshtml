@@ -1,5 +1,5 @@
 @page
-@model ChatModel
+@model CS_483_CSI_477.Pages.ChatModel
 @{
     ViewData["Title"] = "Chat with Advisor";
 }
@@ -7,14 +7,37 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
+
             <div class="card shadow-sm">
                 <div class="card-header text-white" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
                     <h4 class="mb-0">
                         <i class="bi bi-robot me-2"></i>AI Academic Advisor
                     </h4>
                 </div>
+
                 <div class="card-body">
-                    <div class="chat-messages mb-3" id="chatMessages" style="height: 500px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; padding: 1rem; background: #f8f9fa;">
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger">@Model.ErrorMessage</div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.LoadedStudentSummary))
+                    {
+                        <div class="alert alert-success" style="white-space: pre-wrap;">
+                            <strong>Student loaded from database:</strong>
+                            @Model.LoadedStudentSummary
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            Student progress is not loaded. Make sure you are logged in and your account matches a student in the database.
+                        </div>
+                    }
+
+                    <div class="chat-messages mb-3" id="chatMessages"
+                         style="height: 500px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; padding: 1rem; background: #f8f9fa;">
+
                         @if (Model.Messages.Count == 0)
                         {
                             <div class="text-center text-muted py-5">
@@ -40,48 +63,66 @@
                         }
                     </div>
 
-                    <form method="post" class="d-flex gap-2">
-                        <input type="text"
-                               asp-for="UserMessage"
-                               class="form-control"
-                               placeholder="Ask about courses, requirements, or degree planning..."
-                               required />
-                        <button type="submit" class="btn btn-primary" style="min-width: 100px;">
-                            <i class="bi bi-send me-1"></i>Send
-                        </button>
+                    <form method="post" enctype="multipart/form-data" class="d-flex flex-column gap-2">
+                        <div>
+                            <label class="form-label mb-1">Upload Academic Plan (PDF)</label>
+                            <input type="file" asp-for="UploadedPdf" class="form-control" accept=".pdf" />
+                            @if (!string.IsNullOrEmpty(Model.PdfFileName))
+                            {
+                                <div class="small text-success mt-1">
+                                    Loaded PDF: <strong>@Model.PdfFileName</strong>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <input type="text"
+                                   asp-for="UserMessage"
+                                   class="form-control"
+                                   placeholder="Ask about courses, requirements, or degree planning..."
+                                   required />
+                            <button type="submit" class="btn btn-primary" style="min-width: 100px;">
+                                <i class="bi bi-send me-1"></i>Send
+                            </button>
+                        </div>
                     </form>
 
                     <div class="mt-3 d-flex justify-content-between align-items-center">
                         <small class="text-muted">
                             <i class="bi bi-info-circle me-1"></i>
-                            Responses are AI-generated. Always verify important information with official sources.
+                            AI-generated responses. Verify with official sources.
                         </small>
-                        <form method="post" asp-page-handler="Clear" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash me-1"></i>Clear Chat
-                            </button>
-                        </form>
+
+                        <div class="d-flex gap-2">
+                            <form method="post" asp-page-handler="RemovePdf" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-file-earmark-x me-1"></i>Remove PDF
+                                </button>
+                            </form>
+
+                            <form method="post" asp-page-handler="Clear" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash me-1"></i>Clear Chat
+                                </button>
+                            </form>
+                        </div>
                     </div>
+
                 </div>
             </div>
+
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        // Auto-scroll to bottom of chat
         var chatMessages = document.getElementById('chatMessages');
-        if (chatMessages) {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        // Auto-focus input after page load
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             var input = document.querySelector('input[name="UserMessage"]');
-            if (input && !input.value) {
-                input.focus();
-            }
+            if (input && !input.value) input.focus();
         });
     </script>
 }

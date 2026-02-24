@@ -1,5 +1,4 @@
 ﻿using MySql.Data.MySqlClient;
-using System;
 using System.Data;
 
 namespace AdvisorDb
@@ -13,21 +12,16 @@ namespace AdvisorDb
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
 
-        /// <summary>
-        /// Test database connection with comprehensive error handling
-        /// </summary>
         public bool TestConnection(out string errorMessage)
         {
             errorMessage = string.Empty;
 
             try
             {
-                using (var connection = new MySqlConnection(_connectionString))
-                {
-                    connection.Open();
-                    Console.WriteLine("✓ Database connection successful!");
-                    return true;
-                }
+                using var connection = new MySqlConnection(_connectionString);
+                connection.Open();
+                Console.WriteLine("✓ Database connection successful!");
+                return true;
             }
             catch (MySqlException ex)
             {
@@ -43,27 +37,28 @@ namespace AdvisorDb
             }
         }
 
-        /// <summary>
-        /// Execute a query and return results with error handling
-        /// </summary>
-        public DataTable ExecuteQuery(string query, out string errorMessage)
+        // Legacy (kept)
+        public DataTable? ExecuteQuery(string query, out string errorMessage)
+            => ExecuteQuery(query, Array.Empty<MySqlParameter>(), out errorMessage);
+
+        // ✅ Parameterized query
+        public DataTable? ExecuteQuery(string query, IEnumerable<MySqlParameter> parameters, out string errorMessage)
         {
             errorMessage = string.Empty;
-            DataTable dataTable = new DataTable();
+            var dataTable = new DataTable();
 
             try
             {
-                using (var connection = new MySqlConnection(_connectionString))
-                {
-                    connection.Open();
-                    using (var command = new MySqlCommand(query, connection))
-                    {
-                        using (var adapter = new MySqlDataAdapter(command))
-                        {
-                            adapter.Fill(dataTable);
-                        }
-                    }
-                }
+                using var connection = new MySqlConnection(_connectionString);
+                connection.Open();
+
+                using var command = new MySqlCommand(query, connection);
+                foreach (var p in parameters)
+                    command.Parameters.Add(p);
+
+                using var adapter = new MySqlDataAdapter(command);
+                adapter.Fill(dataTable);
+
                 return dataTable;
             }
             catch (MySqlException ex)
@@ -80,25 +75,25 @@ namespace AdvisorDb
             }
         }
 
-        /// <summary>
-        /// Execute non-query commands (INSERT, UPDATE, DELETE) with error handling
-        /// </summary>
+        // Legacy (kept)
         public int ExecuteNonQuery(string query, out string errorMessage)
+            => ExecuteNonQuery(query, Array.Empty<MySqlParameter>(), out errorMessage);
+
+        // ✅ Parameterized non-query
+        public int ExecuteNonQuery(string query, IEnumerable<MySqlParameter> parameters, out string errorMessage)
         {
             errorMessage = string.Empty;
 
             try
             {
-                using (var connection = new MySqlConnection(_connectionString))
-                {
-                    connection.Open();
-                    using (var command = new MySqlCommand(query, connection))
-                    {
-                        int rowsAffected = command.ExecuteNonQuery();
-                        Console.WriteLine($"✓ {rowsAffected} row(s) affected");
-                        return rowsAffected;
-                    }
-                }
+                using var connection = new MySqlConnection(_connectionString);
+                connection.Open();
+
+                using var command = new MySqlCommand(query, connection);
+                foreach (var p in parameters)
+                    command.Parameters.Add(p);
+
+                return command.ExecuteNonQuery();
             }
             catch (MySqlException ex)
             {
@@ -114,30 +109,19 @@ namespace AdvisorDb
             }
         }
 
-        /// <summary>
-        /// Handle MySQL-specific exceptions with user-friendly messages
-        /// </summary>
         private string HandleMySqlException(MySqlException ex)
         {
-            switch (ex.Number)
+            return ex.Number switch
             {
-                case 0:
-                    return "Cannot connect to server. Check if the server is running and network is accessible.";
-                case 1042:
-                    return "Unable to connect to MySQL server. Check host and port.";
-                case 1045:
-                    return "Access denied. Check username and password.";
-                case 1049:
-                    return "Database does not exist.";
-                case 1146:
-                    return "Table does not exist.";
-                case 1062:
-                    return "Duplicate entry - this record already exists.";
-                case 1064:
-                    return "SQL syntax error. Check your query.";
-                default:
-                    return $"MySQL Error ({ex.Number}): {ex.Message}";
-            }
+                0 => "Cannot connect to server. Check if the server is running and network is accessible.",
+                1042 => "Unable to connect to MySQL server. Check host and port.",
+                1045 => "Access denied. Check username and password.",
+                1049 => "Database does not exist.",
+                1146 => "Table does not exist.",
+                1062 => "Duplicate entry - this record already exists.",
+                1064 => "SQL syntax error. Check your query.",
+                _ => $"MySQL Error ({ex.Number}): {ex.Message}"
+            };
         }
     }
 }
