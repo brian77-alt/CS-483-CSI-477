@@ -26,6 +26,7 @@ namespace CS_483_CSI_477.Pages
         private readonly CourseCatalogService _catalogService;
         private readonly GeminiService _gemini;
         private readonly PdfRagService _ragService;
+        private readonly SupportingDocsRagService _docsRagService;
         private readonly IConfiguration _configuration;
 
         public List<ChatMessage> Messages { get; set; } = new();
@@ -52,6 +53,7 @@ namespace CS_483_CSI_477.Pages
             CourseCatalogService catalogService,
             GeminiService gemini,
             PdfRagService ragService,
+            SupportingDocsRagService docsRagService,
             IConfiguration configuration)
         {
             _dbHelper = dbHelper;
@@ -61,6 +63,7 @@ namespace CS_483_CSI_477.Pages
             _catalogService = catalogService;
             _gemini = gemini;
             _ragService = ragService;
+            _docsRagService = docsRagService;
             _configuration = configuration;
         }
 
@@ -71,7 +74,7 @@ namespace CS_483_CSI_477.Pages
 
             EnsureChatId();
 
-            // Auto-load bulletin from Azure if not already loaded
+            // Auto load bulletin from Azure if not already loaded
             await TryAutoLoadBulletinAsync();  // ADD THIS LINE
 
             PdfFileName = HttpContext.Session.GetString(PDF_FILENAME_KEY);
@@ -153,7 +156,7 @@ namespace CS_483_CSI_477.Pages
                 }
             }
 
-            // ===== Send message =====
+            // ----- Send Message -----
             if (string.IsNullOrWhiteSpace(UserMessage))
             {
                 await _chatLogStore.SaveAsync(ChatId, Messages);
@@ -291,9 +294,8 @@ namespace CS_483_CSI_477.Pages
             return "";
         }
 
-        // =========================
-        // AUTO-LOAD BULLETIN FROM AZURE
-        // =========================
+        // AUTO LOAD BULLETIN FROM AZURE
+        // ------------------------------
         private async Task<bool> TryAutoLoadBulletinAsync()
         {
             // Check if bulletin already loaded
@@ -314,8 +316,8 @@ namespace CS_483_CSI_477.Pages
 
                 var studentData = _dbHelper.ExecuteQuery(studentQuery, new[]
                 {
-            new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = sid.Value }
-        }, out var err);
+                    new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = sid.Value }
+                }, out var err);
 
                 if (!string.IsNullOrEmpty(err) || studentData == null || studentData.Rows.Count == 0)
                     return false;
@@ -348,9 +350,9 @@ namespace CS_483_CSI_477.Pages
 
                 var bulletin = _dbHelper.ExecuteQuery(bulletinQuery, new[]
                 {
-    new MySqlParameter("@bulletinYear", MySqlDbType.VarChar) { Value = bulletinYearNeeded },
-    new MySqlParameter("@majorKeyword", MySqlDbType.VarChar) { Value = $"%{majorKeyword}%" }
-}, out var berr);
+                    new MySqlParameter("@bulletinYear", MySqlDbType.VarChar) { Value = bulletinYearNeeded },
+                    new MySqlParameter("@majorKeyword", MySqlDbType.VarChar) { Value = $"%{majorKeyword}%" }
+                }, out var berr);
 
                 if (!string.IsNullOrEmpty(berr) || bulletin == null || bulletin.Rows.Count == 0)
                 {
@@ -583,20 +585,28 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
             // General question - use RAG to find relevant bulletin content
             var ragHits = _ragService.FindTopRelevantSnippets(pdfPages, userMessage, topK: 3, snippetMaxChars: 600);
 
+            // Also search supporting documents
+            var bulletinYear = HttpContext.Session.GetString(BULLETIN_YEAR_KEY) ?? null;
+            var supportingDocs = await _docsRagService.SearchSupportingDocsAsync(
+                userMessage,
+                courseCode: null,
+                documentYear: bulletinYear,
+                maxDocuments: 3);
+
             var generalPrompt = BuildGeneralPromptWithRAG(
                 userMessage,
                 studentContext,
                 PdfFileName ?? "Uploaded PDF",
                 plan,
-                ragHits);
+                ragHits,
+                supportingDocs);
 
             var response = await _gemini.GenerateAsync(generalPrompt);
 
-            // Add citations if RAG found relevant content
-            if (ragHits.Count > 0)
+            if (ragHits.Count > 0 || supportingDocs.Count > 0)
             {
-                var bulletinYear = HttpContext.Session.GetString(BULLETIN_YEAR_KEY) ?? "Unknown";
-                var citations = BuildCitations(ragHits, PdfFileName ?? "Bulletin", bulletinYear);
+                var yearForCitation = HttpContext.Session.GetString(BULLETIN_YEAR_KEY) ?? "Unknown";
+                var citations = BuildCitationsWithDocs(ragHits, PdfFileName ?? "Bulletin", yearForCitation, supportingDocs);
                 response += $"\n\n{citations}";
             }
 
@@ -672,21 +682,21 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
 
             var sb = new StringBuilder();
             sb.AppendLine(@"
-You are an AI Academic Advisor.
+                You are an AI Academic Advisor.
 
-STRICT RULES:
-- You may ONLY recommend courses listed in PROVIDED RECOMMENDED COURSES below.
-- Do NOT invent course codes, names, or credits.
-- Keep it SHORT.
-- Do NOT repeat the full Student DB Context.
-- If asked for a course number, give 3–5 course codes.
+                STRICT RULES:
+                - You may ONLY recommend courses listed in PROVIDED RECOMMENDED COURSES below.
+                - Do NOT invent course codes, names, or credits.
+                - Keep it SHORT.
+                - Do NOT repeat the full Student DB Context.
+                - If asked for a course number, give 3–5 course codes.
 
-Output format:
-## Answer
-## Recommended Next Courses
-## Suggested Schedule (12–15 credits)
-## Notes
-".Trim());
+                Output format:
+                ## Answer
+                ## Recommended Next Courses
+                ## Suggested Schedule (12–15 credits)
+                ## Notes
+                ".Trim());
 
             sb.AppendLine();
             sb.AppendLine("Student Snapshot (short):");
@@ -715,7 +725,8 @@ Output format:
             string studentContext,
             string catalogName,
             DegreePlanParseResult plan,
-            List<RagHit> ragHits)
+            List<RagHit> ragHits,
+            List<DocumentSearchResult> supportingDocs)
         {
             var snap = ShortSnapshot(studentContext);
 
@@ -727,15 +738,15 @@ Output format:
 
             var sb = new StringBuilder();
             sb.AppendLine(@"
-You are an AI Academic Advisor.
+                You are an AI Academic Advisor.
 
-STRICT RULES:
-- Use the short snapshot for identity/completed courses.
-- Use ONLY the course list and bulletin content provided below for codes/names.
-- Do NOT invent course codes/names.
-- Keep it short and do NOT repeat the full DB context.
-- When answering, prioritize information from the BULLETIN CONTENT sections.
-".Trim());
+                STRICT RULES:
+                - Use the short snapshot for identity/completed courses.
+                - Use ONLY the course list and bulletin content provided below for codes/names.
+                - Do NOT invent course codes/names.
+                - Keep it short and do NOT repeat the full DB context.
+                - When answering, prioritize information from the BULLETIN CONTENT sections.
+                ".Trim());
 
             sb.AppendLine();
             sb.AppendLine("Student Snapshot (short):");
@@ -752,6 +763,22 @@ STRICT RULES:
                 foreach (var hit in ragHits)
                 {
                     sb.AppendLine($"[Page {hit.Page}] {hit.Snippet}");
+                    sb.AppendLine();
+                }
+            }
+
+            // ADD THIS SECTION:
+            if (supportingDocs.Count > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine("SUPPORTING DOCUMENTS (syllabi, guides, policies):");
+                foreach (var doc in supportingDocs)
+                {
+                    sb.AppendLine($"[{doc.DocumentType}] {doc.DocumentName}:");
+                    foreach (var hit in doc.RelevantHits)
+                    {
+                        sb.AppendLine($"  Page {hit.Page}: {hit.Snippet}");
+                    }
                     sb.AppendLine();
                 }
             }
@@ -789,6 +816,38 @@ STRICT RULES:
             var credits = FindLine("Credits Earned:");
 
             return $"- Name: {name}\n- Major: {major}\n- GPA: {gpa}\n- Credits: {credits}";
+        }
+
+        private static string BuildCitationsWithDocs(
+            List<RagHit> bulletinHits,
+            string pdfName,
+            string bulletinYear,
+            List<DocumentSearchResult> supportingDocs)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("---");
+            sb.AppendLine("**Sources:**");
+
+            // Bulletin citations
+            if (bulletinHits.Count > 0)
+            {
+                foreach (var hit in bulletinHits.OrderBy(h => h.Page))
+                {
+                    sb.AppendLine($"- Page {hit.Page} of {pdfName} ({bulletinYear})");
+                }
+            }
+
+            // Supporting document citations
+            if (supportingDocs.Count > 0)
+            {
+                foreach (var doc in supportingDocs)
+                {
+                    var pages = string.Join(", ", doc.RelevantHits.Select(h => h.Page).Distinct().OrderBy(p => p));
+                    sb.AppendLine($"- {doc.DocumentType}: {doc.DocumentName} (Pages {pages})");
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }

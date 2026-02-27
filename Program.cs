@@ -21,6 +21,7 @@ builder.Services.AddSingleton<PdfService>();
 builder.Services.AddSingleton<PdfRagService>();
 builder.Services.AddSingleton<CourseCatalogService>();
 builder.Services.AddSingleton<PdfRagService>();
+builder.Services.AddSingleton<SupportingDocsRagService>();
 
 builder.Services.AddHttpClient<GeminiService>(client =>
 {
