@@ -25,6 +25,8 @@ namespace CS_483_CSI_477.Pages
         private readonly PdfService _pdfService;
         private readonly CourseCatalogService _catalogService;
         private readonly GeminiService _gemini;
+        private readonly PdfRagService _ragService;
+        private readonly IConfiguration _configuration;
 
         public List<ChatMessage> Messages { get; set; } = new();
         public string ChatId { get; set; } = "";
@@ -40,6 +42,7 @@ namespace CS_483_CSI_477.Pages
         private const string PDF_PAGES_JSON_KEY = "PdfPagesJson";
         private const string STUDENT_CONTEXT_KEY = "StudentContextText";
         private const string CATALOG_JSON_KEY = "ParsedCatalogJson";
+        private const string BULLETIN_YEAR_KEY = "BulletinYear";
 
         public ChatModel(
             DatabaseHelper dbHelper,
@@ -47,7 +50,9 @@ namespace CS_483_CSI_477.Pages
             ILogger<ChatModel> logger,
             PdfService pdfService,
             CourseCatalogService catalogService,
-            GeminiService gemini)
+            GeminiService gemini,
+            PdfRagService ragService,
+            IConfiguration configuration)
         {
             _dbHelper = dbHelper;
             _chatLogStore = chatLogStore;
@@ -55,6 +60,8 @@ namespace CS_483_CSI_477.Pages
             _pdfService = pdfService;
             _catalogService = catalogService;
             _gemini = gemini;
+            _ragService = ragService;
+            _configuration = configuration;
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -63,6 +70,9 @@ namespace CS_483_CSI_477.Pages
                 return RedirectToPage("/Login");
 
             EnsureChatId();
+
+            // Auto-load bulletin from Azure if not already loaded
+            await TryAutoLoadBulletinAsync();  // ADD THIS LINE
 
             PdfFileName = HttpContext.Session.GetString(PDF_FILENAME_KEY);
             await EnsureStudentContextLoadedAsync();
@@ -111,20 +121,27 @@ namespace CS_483_CSI_477.Pages
 
                     HttpContext.Session.SetString(PDF_PAGES_JSON_KEY, JsonSerializer.Serialize(extract.Pages));
 
-                    // ✅ Parse catalog from PDF and cache it
+                    // Extract bulletin year from filename
+                    var bulletinYear = ExtractBulletinYear(UploadedPdf.FileName);
+                    HttpContext.Session.SetString(BULLETIN_YEAR_KEY, bulletinYear);
+
+                    // Parse catalog from PDF and cache it
                     var plan = _catalogService.ParseDegreePlanFromPdfPages(extract.Pages);
                     HttpContext.Session.SetString(CATALOG_JSON_KEY, JsonSerializer.Serialize(plan));
+
+                    // Check for year mismatch warning
+                    var yearWarning = CheckBulletinYearMismatch(bulletinYear);
 
                     Messages.Add(new ChatMessage
                     {
                         Role = "assistant",
                         Content =
-                            $"✅ Loaded PDF: {UploadedPdf.FileName}. Extracted {extract.Pages.Count} page(s), {extract.TotalChars:N0} chars. " +
-                            $"Parsed {plan.TotalCount} course item(s) (Required: {plan.Required.Count}, Electives: {plan.Electives.Count}).",
+                            $"✅ Loaded PDF: {UploadedPdf.FileName} (Bulletin Year: {bulletinYear}). " +
+                            $"Extracted {extract.Pages.Count} page(s), {extract.TotalChars:N0} chars. " +
+                            $"Parsed {plan.TotalCount} course item(s) (Required: {plan.Required.Count}, Electives: {plan.Electives.Count})." +
+                            (string.IsNullOrEmpty(yearWarning) ? "" : $"\n\n⚠️ {yearWarning}"),
                         Timestamp = DateTime.Now
                     });
-
-
 
                     await _chatLogStore.SaveAsync(ChatId, Messages);
                 }
@@ -174,7 +191,7 @@ namespace CS_483_CSI_477.Pages
                 Messages.Add(new ChatMessage
                 {
                     Role = "assistant",
-                    Content = "I’m having trouble processing that right now. Please try again.",
+                    Content = "I'm having trouble processing that right now. Please try again.",
                     Timestamp = DateTime.Now
                 });
 
@@ -194,6 +211,7 @@ namespace CS_483_CSI_477.Pages
             HttpContext.Session.Remove(PDF_PAGES_JSON_KEY);
             HttpContext.Session.Remove(CATALOG_JSON_KEY);
             HttpContext.Session.Remove(STUDENT_CONTEXT_KEY);
+            HttpContext.Session.Remove(BULLETIN_YEAR_KEY);
 
             return RedirectToPage();
         }
@@ -203,6 +221,7 @@ namespace CS_483_CSI_477.Pages
             HttpContext.Session.Remove(PDF_FILENAME_KEY);
             HttpContext.Session.Remove(PDF_PAGES_JSON_KEY);
             HttpContext.Session.Remove(CATALOG_JSON_KEY);
+            HttpContext.Session.Remove(BULLETIN_YEAR_KEY);
             return RedirectToPage();
         }
 
@@ -212,9 +231,217 @@ namespace CS_483_CSI_477.Pages
             HttpContext.Session.SetString("ChatId", ChatId);
         }
 
+        // Extract bulletin year from filename (e.g., "CS_Bulletin_2024-2025.pdf" → "2024-2025")
+        private static string ExtractBulletinYear(string filename)
+        {
+            var match = Regex.Match(filename, @"(\d{4})-?(\d{4})", RegexOptions.IgnoreCase);
+            if (match.Success)
+                return $"{match.Groups[1].Value}-{match.Groups[2].Value}";
+
+            match = Regex.Match(filename, @"(\d{4})", RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                var year = int.Parse(match.Groups[1].Value);
+                return $"{year}-{year + 1}";
+            }
+
+            return "Unknown";
+        }
+
+        // Check if student is using the correct bulletin year
+        private string CheckBulletinYearMismatch(string bulletinYear)
+        {
+            var sid = HttpContext.Session.GetInt32("StudentID");
+            if (!sid.HasValue || bulletinYear == "Unknown") return "";
+
+            // Get student's entry year from database
+            var query = @"
+                SELECT EnrollmentYear 
+                FROM Students 
+                WHERE StudentID = @studentId";
+
+            var result = _dbHelper.ExecuteQuery(query, new[]
+            {
+                new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = sid.Value }
+            }, out var err);
+
+            if (!string.IsNullOrEmpty(err) || result == null || result.Rows.Count == 0)
+                return "";
+
+            var enrollmentYear = result.Rows[0]["EnrollmentYear"];
+            if (enrollmentYear == DBNull.Value) return "";
+
+            var entryYear = Convert.ToInt32(enrollmentYear);
+            var bulletinStartYear = int.Parse(bulletinYear.Split('-')[0]);
+
+            // Warn if using a bulletin from before they enrolled
+            if (bulletinStartYear < entryYear)
+            {
+                return $"WARNING: You enrolled in {entryYear}, but this bulletin is from {bulletinYear}. " +
+                       $"You should follow the bulletin from your entry year ({entryYear}-{entryYear + 1}) unless advised otherwise.";
+            }
+
+            // Warn if using a bulletin from after they enrolled
+            if (bulletinStartYear > entryYear + 1)
+            {
+                return $"NOTE: This bulletin ({bulletinYear}) is newer than your entry year ({entryYear}). " +
+                       $"Consult your advisor before following newer requirements.";
+            }
+
+            return "";
+        }
+
         // =========================
+        // AUTO-LOAD BULLETIN FROM AZURE
+        // =========================
+        private async Task<bool> TryAutoLoadBulletinAsync()
+        {
+            // Check if bulletin already loaded
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString(PDF_FILENAME_KEY)))
+                return true;
+
+            var sid = HttpContext.Session.GetInt32("StudentID");
+            if (!sid.HasValue) return false;
+
+            try
+            {
+                // Get student's major and enrollment year
+                var studentQuery = @"
+            SELECT s.Major, s.EnrollmentYear, dp.DegreeCode
+            FROM Students s
+            LEFT JOIN DegreePrograms dp ON s.Major = dp.DegreeName
+            WHERE s.StudentID = @studentId";
+
+                var studentData = _dbHelper.ExecuteQuery(studentQuery, new[]
+                {
+            new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = sid.Value }
+        }, out var err);
+
+                if (!string.IsNullOrEmpty(err) || studentData == null || studentData.Rows.Count == 0)
+                    return false;
+
+                var degreeCode = studentData.Rows[0]["DegreeCode"]?.ToString() ?? "";
+                var enrollmentYear = studentData.Rows[0]["EnrollmentYear"];
+
+                if (string.IsNullOrEmpty(degreeCode) || enrollmentYear == DBNull.Value)
+                    return false;
+
+                var entryYear = Convert.ToInt32(enrollmentYear);
+                var bulletinYearNeeded = $"{entryYear}-{entryYear + 1}";
+
+                // Map degree codes to full names in filenames
+                string majorKeyword = degreeCode switch
+                {
+                    "CS-BS" => "Computer Science",
+                    "CIS-BS" => "Computer Information Systems",
+                    _ => degreeCode
+                };
+
+                var bulletinQuery = @"
+                    SELECT BulletinID, FileName, FilePath, BulletinYear
+                    FROM Bulletins
+                    WHERE IsActive = 1
+                    AND BulletinYear = @bulletinYear
+                    AND FileName LIKE @majorKeyword
+                    ORDER BY UploadDate DESC
+                    LIMIT 1";
+
+                var bulletin = _dbHelper.ExecuteQuery(bulletinQuery, new[]
+                {
+    new MySqlParameter("@bulletinYear", MySqlDbType.VarChar) { Value = bulletinYearNeeded },
+    new MySqlParameter("@majorKeyword", MySqlDbType.VarChar) { Value = $"%{majorKeyword}%" }
+}, out var berr);
+
+                if (!string.IsNullOrEmpty(berr) || bulletin == null || bulletin.Rows.Count == 0)
+                {
+                    _logger.LogWarning($"No bulletin found for {degreeCode}, year {bulletinYearNeeded}");
+                    return false;
+                }
+
+                var bulletinRow = bulletin.Rows[0];
+                var fileName = bulletinRow["FileName"].ToString() ?? "";
+                var filePath = bulletinRow["FilePath"].ToString() ?? "";
+                var bulletinYear = bulletinRow["BulletinYear"].ToString() ?? "";
+
+                // Download from Azure/local and extract
+                byte[] pdfBytes = await DownloadPdfFromPathAsync(filePath);
+
+                if (pdfBytes == null || pdfBytes.Length == 0)
+                    return false;
+
+                var extract = _pdfService.Extract(pdfBytes, fileName, maxPages: 25, maxCharsTotal: 200_000);
+
+                // Cache in session
+                HttpContext.Session.SetString(PDF_FILENAME_KEY, fileName);
+                HttpContext.Session.SetString(PDF_PAGES_JSON_KEY, JsonSerializer.Serialize(extract.Pages));
+                HttpContext.Session.SetString(BULLETIN_YEAR_KEY, bulletinYear);
+
+                var plan = _catalogService.ParseDegreePlanFromPdfPages(extract.Pages);
+                HttpContext.Session.SetString(CATALOG_JSON_KEY, JsonSerializer.Serialize(plan));
+
+                PdfFileName = fileName;
+
+                _logger.LogInformation($"Auto-loaded bulletin: {fileName} ({bulletinYear})");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to auto-load bulletin");
+                return false;
+            }
+        }
+
+        private async Task<byte[]?> DownloadPdfFromPathAsync(string filePath)
+        {
+            try
+            {
+                // If it's a local path (starts with /uploads), read from filesystem
+                if (filePath.StartsWith("/uploads"))
+                {
+                    var localPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", filePath.TrimStart('/'));
+                    if (System.IO.File.Exists(localPath))
+                        return await System.IO.File.ReadAllBytesAsync(localPath);
+                    return null;
+                }
+
+                // Download from Azure Blob Storage with authentication
+                var azureConnStr = _configuration["AzureBlobStorage:ConnectionString"];
+                if (string.IsNullOrEmpty(azureConnStr))
+                {
+                    _logger.LogWarning("Azure connection string not configured");
+                    return null;
+                }
+
+                // Parse blob URL to get container and blob name
+                var uri = new Uri(filePath);
+                var pathParts = uri.AbsolutePath.TrimStart('/').Split('/', 2);
+
+                if (pathParts.Length < 2)
+                {
+                    _logger.LogError($"Invalid blob path: {filePath}");
+                    return null;
+                }
+
+                var containerName = pathParts[0];
+                var blobName = pathParts[1];
+
+                // Use Azure SDK to download with authentication
+                var blobServiceClient = new Azure.Storage.Blobs.BlobServiceClient(azureConnStr);
+                var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+                var blobClient = containerClient.GetBlobClient(blobName);
+
+                using var ms = new MemoryStream();
+                await blobClient.DownloadToAsync(ms);
+                return ms.ToArray();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to download PDF from {filePath}");
+                return null;
+            }
+        }
+
         // DB CONTEXT
-        // =========================
         private async Task EnsureStudentContextLoadedAsync()
         {
             LoadedStudentSummary = HttpContext.Session.GetString(STUDENT_CONTEXT_KEY);
@@ -234,20 +461,21 @@ namespace CS_483_CSI_477.Pages
             var sb = new StringBuilder();
 
             var summarySql = @"
-SELECT 
-    CONCAT(s.FirstName, ' ', s.LastName) as FullName,
-    s.StudentID,
-    s.Major,
-    s.CurrentGPA,
-    s.TotalCreditsEarned,
-    s.EnrollmentStatus,
-    COALESCE(dp.TotalCreditsRequired, 120) as TotalCreditsRequired,
-    COALESCE(dp.DegreeCode, '') as DegreeCode
-FROM Students s
-LEFT JOIN DegreePrograms dp ON s.Major = dp.DegreeName
-WHERE s.StudentID = @studentId
-LIMIT 1;
-";
+                SELECT 
+                    CONCAT(s.FirstName, ' ', s.LastName) as FullName,
+                    s.StudentID,
+                    s.Major,
+                    s.CurrentGPA,
+                    s.TotalCreditsEarned,
+                    s.EnrollmentStatus,
+                    s.EnrollmentYear,
+                    COALESCE(dp.TotalCreditsRequired, 120) as TotalCreditsRequired,
+                    COALESCE(dp.DegreeCode, '') as DegreeCode
+                FROM Students s
+                LEFT JOIN DegreePrograms dp ON s.Major = dp.DegreeName
+                WHERE s.StudentID = @studentId
+                LIMIT 1;
+                ";
             var summary = _dbHelper.ExecuteQuery(summarySql, new[]
             {
                 new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = studentId }
@@ -265,6 +493,7 @@ LIMIT 1;
             var required = row["TotalCreditsRequired"]?.ToString() ?? "120";
             var status = row["EnrollmentStatus"]?.ToString() ?? "Active";
             var degreeCode = row["DegreeCode"]?.ToString() ?? "";
+            var enrollmentYear = row["EnrollmentYear"] != DBNull.Value ? row["EnrollmentYear"].ToString() : "N/A";
 
             var completedSql = @"
 SELECT 
@@ -291,6 +520,7 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
             sb.AppendLine($"Name: {fullName}");
             sb.AppendLine($"StudentID: {studentId}");
             sb.AppendLine($"Major: {major}");
+            sb.AppendLine($"Enrollment Year: {enrollmentYear}");
             sb.AppendLine($"Enrollment Status: {status}");
             sb.AppendLine($"Current GPA: {gpa}");
             sb.AppendLine($"Credits Earned: {earned} / {required}");
@@ -311,7 +541,7 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
         }
 
         // =========================
-        // MAIN RESPONSE
+        // MAIN RESPONSE WITH RAG
         // =========================
         private async Task<string> GetAdvisorResponseAsync(string userMessage)
         {
@@ -324,9 +554,11 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
                 return BuildProfileAnswer(studentContext);
 
             var plan = LoadPlanFromSession();
-            if (plan.TotalCount == 0)
+            var pdfPages = LoadPdfPagesFromSession();
+
+            if (plan.TotalCount == 0 && pdfPages.Count == 0)
             {
-                return "I didn’t find any course listings parsed from the PDF yet. Please upload the bulletin PDF again (must be text-based, not scanned).";
+                return "I didn't find any course listings or bulletin content yet. Please upload the bulletin PDF (must be text-based, not scanned).";
             }
 
             var completedSet = ExtractCompletedCourseCodes(studentContext);
@@ -341,21 +573,39 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
 
                 if (rec.Count == 0)
                 {
-                    return "I parsed the PDF, but I couldn’t find any remaining required/elective courses to recommend.";
+                    return "I parsed the PDF, but I couldn't find any remaining required/elective courses to recommend.";
                 }
 
                 var prompt = BuildPlanningPrompt(userMessage, studentContext, PdfFileName ?? "Uploaded PDF", rec);
                 return await _gemini.GenerateAsync(prompt);
             }
 
-            // General
-            var generalPrompt = BuildGeneralPrompt(userMessage, studentContext, PdfFileName ?? "Uploaded PDF", plan);
-            return await _gemini.GenerateAsync(generalPrompt);
+            // General question - use RAG to find relevant bulletin content
+            var ragHits = _ragService.FindTopRelevantSnippets(pdfPages, userMessage, topK: 3, snippetMaxChars: 600);
+
+            var generalPrompt = BuildGeneralPromptWithRAG(
+                userMessage,
+                studentContext,
+                PdfFileName ?? "Uploaded PDF",
+                plan,
+                ragHits);
+
+            var response = await _gemini.GenerateAsync(generalPrompt);
+
+            // Add citations if RAG found relevant content
+            if (ragHits.Count > 0)
+            {
+                var bulletinYear = HttpContext.Session.GetString(BULLETIN_YEAR_KEY) ?? "Unknown";
+                var citations = BuildCitations(ragHits, PdfFileName ?? "Bulletin", bulletinYear);
+                response += $"\n\n{citations}";
+            }
+
+            return response;
         }
 
         private static string BuildProfileAnswer(string studentContext)
         {
-            return "## Answer\nHere’s your profile from the database.\n\n" + studentContext;
+            return "## Answer\nHere's your profile from the database.\n\n" + studentContext;
         }
 
         private DegreePlanParseResult LoadPlanFromSession()
@@ -372,17 +622,44 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
             }
         }
 
+        private List<PdfPageText> LoadPdfPagesFromSession()
+        {
+            var json = HttpContext.Session.GetString(PDF_PAGES_JSON_KEY);
+            if (string.IsNullOrWhiteSpace(json)) return new List<PdfPageText>();
+            try
+            {
+                return JsonSerializer.Deserialize<List<PdfPageText>>(json) ?? new List<PdfPageText>();
+            }
+            catch
+            {
+                return new List<PdfPageText>();
+            }
+        }
+
         private static HashSet<string> ExtractCompletedCourseCodes(string studentContext)
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var line in studentContext.Split('\n'))
             {
-                // matches "- CS 215:" or "- CS215:"
                 var m = Regex.Match(line, @"-\s+([A-Z]{2,4})\s*(\d{3})\s*:", RegexOptions.IgnoreCase);
                 if (m.Success)
                     set.Add($"{m.Groups[1].Value.ToUpperInvariant()} {m.Groups[2].Value}");
             }
             return set;
+        }
+
+        private static string BuildCitations(List<RagHit> hits, string pdfName, string bulletinYear)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("---");
+            sb.AppendLine("**Sources:**");
+
+            foreach (var hit in hits.OrderBy(h => h.Page))
+            {
+                sb.AppendLine($"- Page {hit.Page} of {pdfName} ({bulletinYear})");
+            }
+
+            return sb.ToString();
         }
 
         private static string BuildPlanningPrompt(
@@ -433,15 +710,15 @@ Output format:
             return sb.ToString();
         }
 
-        private static string BuildGeneralPrompt(
+        private static string BuildGeneralPromptWithRAG(
             string userQuestion,
             string studentContext,
             string catalogName,
-            DegreePlanParseResult plan)
+            DegreePlanParseResult plan,
+            List<RagHit> ragHits)
         {
             var snap = ShortSnapshot(studentContext);
 
-            // Small slice so prompt isn't huge
             var sample = plan.Required
                 .OrderBy(c => c.Number)
                 .Take(15)
@@ -454,9 +731,10 @@ You are an AI Academic Advisor.
 
 STRICT RULES:
 - Use the short snapshot for identity/completed courses.
-- Use ONLY the course list provided below for codes/names.
+- Use ONLY the course list and bulletin content provided below for codes/names.
 - Do NOT invent course codes/names.
 - Keep it short and do NOT repeat the full DB context.
+- When answering, prioritize information from the BULLETIN CONTENT sections.
 ".Trim());
 
             sb.AppendLine();
@@ -464,7 +742,21 @@ STRICT RULES:
             sb.AppendLine(snap);
             sb.AppendLine();
 
-            sb.AppendLine($"Catalog from PDF: {catalogName} (subset)");
+            sb.AppendLine($"Catalog from PDF: {catalogName}");
+
+            // Add RAG content if available
+            if (ragHits.Count > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine("BULLETIN CONTENT (most relevant sections):");
+                foreach (var hit in ragHits)
+                {
+                    sb.AppendLine($"[Page {hit.Page}] {hit.Snippet}");
+                    sb.AppendLine();
+                }
+            }
+
+            sb.AppendLine("Course List (subset):");
             foreach (var c in sample)
             {
                 var cr = !string.IsNullOrWhiteSpace(c.CreditsText) ? $" ({c.CreditsText} cr)" : "";

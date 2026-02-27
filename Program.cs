@@ -20,6 +20,7 @@ builder.Services.AddSingleton<IChatLogStore, FileChatLogStore>();
 builder.Services.AddSingleton<PdfService>();
 builder.Services.AddSingleton<PdfRagService>();
 builder.Services.AddSingleton<CourseCatalogService>();
+builder.Services.AddSingleton<PdfRagService>();
 
 builder.Services.AddHttpClient<GeminiService>(client =>
 {

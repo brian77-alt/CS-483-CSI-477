@@ -79,9 +79,8 @@ public class AdminDashboardModel : PageModel
         return Page();
     }
 
-    // ----------------------------------------
     // POST: Student Lookup
-    // ----------------------------------------
+    //-------------------------
     public IActionResult OnPostSearch()
     {
         IsConnected = _dbHelper.TestConnection(out string error);
@@ -119,7 +118,6 @@ public class AdminDashboardModel : PageModel
         return Page();
     }
 
-    // ----------------------------------------
     // POST: Upload Bulletin PDF to Azure Blob
     // ----------------------------------------
     public async Task<IActionResult> OnPostUploadBulletinAsync()
@@ -158,7 +156,7 @@ public class AdminDashboardModel : PageModel
 
             // If Azure not yet configured, save locally instead
             if (string.IsNullOrEmpty(azureConnStr) ||
-                azureConnStr == "PASTE_YOUR_AZURE_CONNECTION_STRING_HERE")
+                azureConnStr == "Insert_AZURE_KEY_HERE")
             {
                 fileUrl = await SaveLocalAsync(file, "bulletins", BulletinYear.ToString());
             }
@@ -179,13 +177,15 @@ public class AdminDashboardModel : PageModel
             }
 
             // Save metadata to MySQL
+            string bulletinYearFormatted = $"{BulletinYear}-{BulletinYear + 1}";
+
             string insert = $@"
-                INSERT INTO Bulletins 
-                    (AcademicYear, BulletinType, FileName, FilePath, FileSize, UploadedBy, Description)
-                VALUES 
-                    ({BulletinYear}, 'Undergraduate', '{MySqlEscape(file.FileName)}',
-                     '{MySqlEscape(fileUrl)}', {file.Length}, 1,
-                     '{MySqlEscape(BulletinDescription ?? $"Bulletin {BulletinYear}-{BulletinYear + 1}")}')";
+             INSERT INTO Bulletins 
+                 (AcademicYear, BulletinYear, BulletinType, FileName, FilePath, FileSize, UploadedBy, Description)
+             VALUES 
+                ({BulletinYear}, '{bulletinYearFormatted}', 'Undergraduate', '{MySqlEscape(file.FileName)}',
+                '{MySqlEscape(fileUrl)}', {file.Length}, 1,
+                '{MySqlEscape(BulletinDescription ?? $"Bulletin {bulletinYearFormatted}")}')";
 
             int rows = _dbHelper.ExecuteNonQuery(insert, out string dbError);
 
@@ -210,9 +210,8 @@ public class AdminDashboardModel : PageModel
         return Page();
     }
 
-    // ----------------------------------------
     // POST: Upload Supporting Document
-    // ----------------------------------------
+    // ---------------------------------
     public async Task<IActionResult> OnPostUploadDocumentAsync()
     {
         IsConnected = _dbHelper.TestConnection(out string error);
@@ -299,9 +298,8 @@ public class AdminDashboardModel : PageModel
         return Page();
     }
 
-    // ----------------------------------------
     // POST: Delete a Bulletin
-    // ----------------------------------------
+    // -------------------------
     public IActionResult OnPostDeleteBulletin(int id)
     {
         _dbHelper.ExecuteNonQuery(
@@ -309,9 +307,8 @@ public class AdminDashboardModel : PageModel
         return RedirectToPage();
     }
 
-    // ----------------------------------------
     // POST: Delete a Document
-    // ----------------------------------------
+    // ----------------------------
     public IActionResult OnPostDeleteDocument(int id)
     {
         _dbHelper.ExecuteNonQuery(
@@ -319,9 +316,8 @@ public class AdminDashboardModel : PageModel
         return RedirectToPage();
     }
 
-    // ----------------------------------------
     // Helpers
-    // ----------------------------------------
+    // ----------
     private void LoadBulletins()
     {
         Bulletins = _dbHelper.ExecuteQuery(
