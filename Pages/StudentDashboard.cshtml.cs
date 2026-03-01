@@ -1,6 +1,8 @@
 using AdvisorDb;
+using CS_483_CSI_477.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Data;
 
 namespace CS_483_CSI_477.Pages
 {
@@ -15,9 +17,12 @@ namespace CS_483_CSI_477.Pages
         public int CoursesCompleted { get; set; }
         public string EnrollmentStatus { get; set; } = string.Empty;
 
-        public StudentDashboardModel(DatabaseHelper dbHelper)
+        private readonly PrerequisiteService _prereqService;
+
+        public StudentDashboardModel(DatabaseHelper dbHelper, PrerequisiteService prereqService)
         {
             _dbHelper = dbHelper;
+            _prereqService = prereqService;
         }
 
         public IActionResult OnGet()

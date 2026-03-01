@@ -44,6 +44,7 @@ namespace CS_483_CSI_477.Pages
         private const string STUDENT_CONTEXT_KEY = "StudentContextText";
         private const string CATALOG_JSON_KEY = "ParsedCatalogJson";
         private const string BULLETIN_YEAR_KEY = "BulletinYear";
+        private readonly PrerequisiteService _prereqService;
 
         public ChatModel(
             DatabaseHelper dbHelper,
@@ -54,7 +55,8 @@ namespace CS_483_CSI_477.Pages
             GeminiService gemini,
             PdfRagService ragService,
             SupportingDocsRagService docsRagService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            PrerequisiteService prereqService)
         {
             _dbHelper = dbHelper;
             _chatLogStore = chatLogStore;
@@ -65,6 +67,7 @@ namespace CS_483_CSI_477.Pages
             _ragService = ragService;
             _docsRagService = docsRagService;
             _configuration = configuration;
+            _prereqService = prereqService;
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -628,7 +631,8 @@ namespace CS_483_CSI_477.Pages
                     return "I parsed the PDF, but I couldn't find any remaining required/elective courses to recommend.";
                 }
 
-                var prompt = BuildPlanningPrompt(userMessage, studentContext, PdfFileName ?? "Uploaded PDF", rec);
+                var sid = HttpContext.Session.GetInt32("StudentID");
+                var prompt = BuildPlanningPrompt(userMessage, studentContext, PdfFileName ?? "Uploaded PDF", rec, sid);
                 return await _gemini.GenerateWithHistoryAsync(Messages, prompt);
             }
 
@@ -733,11 +737,12 @@ namespace CS_483_CSI_477.Pages
             return sb.ToString();
         }
 
-        private static string BuildPlanningPrompt(
+        private string BuildPlanningPrompt(
             string userQuestion,
             string studentContext,
             string catalogName,
-            List<CatalogCourse> recommended)
+            List<CatalogCourse> recommended,
+            int? studentId)
         {
             var snap = ShortSnapshot(studentContext);
 
@@ -793,10 +798,31 @@ namespace CS_483_CSI_477.Pages
             sb.AppendLine();
 
             sb.AppendLine("PROVIDED RECOMMENDED COURSES (use ONLY these):");
+            var sid = HttpContext.Session.GetInt32("StudentID");
             foreach (var c in recommended.Take(6))
             {
                 var cr = !string.IsNullOrWhiteSpace(c.CreditsText) ? $" | Credits: {c.CreditsText}" : "";
-                sb.AppendLine($"- {c.Code} — {c.Title}{cr}");
+
+                // Check prerequisites
+                string prereqInfo = "";
+                if (sid.HasValue)
+                {
+                    var prereqCheck = _prereqService.CheckPrerequisites(sid.Value, c.Code);
+                    if (prereqCheck.MissingPrerequisites.Count > 0)
+                    {
+                        prereqInfo = $" | ⚠️ Missing: {string.Join(", ", prereqCheck.MissingPrerequisites.Select(p => p.Split('-')[0].Trim()))}";
+                    }
+                    else
+                    {
+                        var prereqs = _prereqService.GetPrerequisitesDisplay(c.Code);
+                        if (prereqs != "None")
+                        {
+                            prereqInfo = $" | Prerequisites met: {prereqs}";
+                        }
+                    }
+                }
+
+                sb.AppendLine($"- {c.Code} — {c.Title}{cr}{prereqInfo}");
             }
 
             sb.AppendLine();
