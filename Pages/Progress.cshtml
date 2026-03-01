@@ -1,0 +1,302 @@
+﻿@page
+@model ProgressModel
+@{
+    ViewData["Title"] = "Academic Progress";
+}
+
+<div class="container mt-4 fade-in-up">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                <div class="card-body p-4">
+                    <h2 class="mb-2">
+                        <i class="bi bi-bar-chart-line-fill me-3"></i>Academic Progress
+                    </h2>
+                    <p class="lead mb-0">
+                        <i class="bi bi-person-circle me-2"></i>@Model.StudentName
+                        <span class="ms-3">
+                            <i class="bi bi-mortarboard-fill me-2"></i>@Model.Major
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall Progress Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header text-white" style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);">
+            <h5 class="mb-0">
+                <i class="bi bi-trophy-fill me-2"></i>Overall Degree Progress
+            </h5>
+        </div>
+        <div class="card-body p-4">
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-bold">
+                        <i class="bi bi-check2-circle me-2 text-success"></i>Completion
+                    </span>
+                    <span class="fw-bold fs-5 text-primary">@Model.CompletionPercentage%</span>
+                </div>
+                <div class="progress" style="height: 32px;">
+                    <div class="progress-bar" role="progressbar"
+                         style="width: @Model.CompletionPercentage%;"
+                         aria-valuenow="@Model.CompletionPercentage"
+                         aria-valuemin="0" aria-valuemax="100">
+                        <strong>@Model.CompletionPercentage%</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row text-center g-4 mt-3">
+                <div class="col-md-3">
+                    <div class="p-3 rounded" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);">
+                        <i class="bi bi-bookmark-check-fill text-primary" style="font-size: 2rem;"></i>
+                        <h6 class="text-muted mt-2 mb-1">Credits Completed</h6>
+                        <h3 class="text-primary mb-0">@Model.TotalCreditsEarned / @Model.TotalCreditsRequired</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 rounded" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+                        <i class="bi bi-journal-check text-success" style="font-size: 2rem;"></i>
+                        <h6 class="text-muted mt-2 mb-1">Courses Completed</h6>
+                        <h3 class="text-success mb-0">@(Model.CompletedCourses?.Rows.Count ?? 0)</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 rounded" style="background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);">
+                        <i class="bi bi-star-fill" style="font-size: 2rem; color: #8b5cf6;"></i>
+                        <h6 class="text-muted mt-2 mb-1">Current GPA</h6>
+                        <h3 class="mb-0" style="color: #8b5cf6;">@Model.CurrentGPA.ToString("F2")</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 rounded" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                        <i class="bi bi-hourglass-split text-warning" style="font-size: 2rem;"></i>
+                        <h6 class="text-muted mt-2 mb-1">Credits Remaining</h6>
+                        <h3 class="text-warning mb-0">@(Model.TotalCreditsRequired - Model.TotalCreditsEarned)</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Requirements Progress -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-check me-2"></i>Requirements Progress
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Core Requirement 1 -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-semibold">
+                                <i class="bi bi-circle-fill me-2" style="color: #3b82f6; font-size: 0.5rem;"></i>
+                                @Model.CoreRequirement1Label
+                            </span>
+                            <span class="text-muted">
+                                <strong>@Model.CoreRequirement1Credits</strong> / @Model.CoreRequirement1Required credits
+                            </span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar"
+                                 style="width: @((Model.CoreRequirement1Credits * 100 / Model.CoreRequirement1Required))%; background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Core Requirement 2 -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-semibold">
+                                <i class="bi bi-circle-fill me-2" style="color: #10b981; font-size: 0.5rem;"></i>
+                                @Model.CoreRequirement2Label
+                            </span>
+                            <span class="text-muted">
+                                <strong>@Model.CoreRequirement2Credits</strong> / @Model.CoreRequirement2Required credits
+                            </span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar"
+                                 style="width: @((Model.CoreRequirement2Credits * 100 / Model.CoreRequirement2Required))%; background: linear-gradient(90deg, #10b981 0%, #059669 100%);">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Directed Electives -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-semibold">
+                                <i class="bi bi-circle-fill me-2" style="color: #8b5cf6; font-size: 0.5rem;"></i>
+                                Directed Electives
+                            </span>
+                            <span class="text-muted">
+                                <strong>@Model.ElectiveCredits</strong> / 12 credits
+                            </span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar"
+                                 style="width: @((Model.ElectiveCredits * 100 / 12))%; background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Core 39 -->
+                    <div class="mb-0">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-semibold">
+                                <i class="bi bi-circle-fill me-2" style="color: #f59e0b; font-size: 0.5rem;"></i>
+                                Core 39 (General Education)
+                            </span>
+                            <span class="text-muted">
+                                <strong>@Model.Core39Credits</strong> / 39 credits
+                            </span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar"
+                                 style="width: @((Model.Core39Credits * 100 / 39))%; background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Degree Summary -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-mortarboard-fill me-2"></i>Degree Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold">
+                                <i class="bi bi-award me-2 text-primary"></i>Major:
+                            </span>
+                            <span>@Model.Major</span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold">
+                                <i class="bi bi-flag me-2 text-secondary"></i>Total Credits Required:
+                            </span>
+                            <span><strong>@Model.TotalCreditsRequired</strong></span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold">
+                                <i class="bi bi-check-circle me-2 text-success"></i>Credits Earned:
+                            </span>
+                            <span class="text-success"><strong>@Model.TotalCreditsEarned</strong></span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold">
+                                <i class="bi bi-hourglass-split me-2 text-warning"></i>Credits Remaining:
+                            </span>
+                            <span class="text-warning"><strong>@(Model.TotalCreditsRequired - Model.TotalCreditsEarned)</strong></span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold">
+                                <i class="bi bi-star-fill me-2" style="color: #8b5cf6;"></i>Current GPA:
+                            </span>
+                            <span style="color: #8b5cf6;"><strong>@Model.CurrentGPA.ToString("F2")</strong></span>
+                        </div>
+                        <div class="list-group-item px-0 d-flex justify-content-between align-items-center border-0">
+                            <span class="fw-semibold">
+                                <i class="bi bi-trophy-fill me-2 text-primary"></i>Completion:
+                            </span>
+                            <span>
+                                <span class="badge @(Model.CompletionPercentage >= 75 ? "bg-success" : Model.CompletionPercentage >= 50 ? "bg-warning" : "bg-secondary")">
+                                    @Model.CompletionPercentage%
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed Courses Table -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-journal-check me-2"></i>Completed Courses
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead style="background: linear-gradient(135deg, #1f2937 0%, #374151 100%); color: white;">
+                        <tr>
+                            <th class="py-3">
+                                <i class="bi bi-hash me-2"></i>Course Code
+                            </th>
+                            <th class="py-3">
+                                <i class="bi bi-book me-2"></i>Course Name
+                            </th>
+                            <th class="py-3">
+                                <i class="bi bi-clock me-2"></i>Credits
+                            </th>
+                            <th class="py-3">
+                                <i class="bi bi-award me-2"></i>Grade
+                            </th>
+                            <th class="py-3">
+                                <i class="bi bi-calendar me-2"></i>Semester
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.CompletedCourses != null && Model.CompletedCourses.Rows.Count > 0)
+                        {
+                            @foreach (System.Data.DataRow row in Model.CompletedCourses.Rows)
+                            {
+                                var grade = row["Grade"].ToString();
+                                var badgeClass = grade switch
+                                {
+                                    "A" or "A-" => "bg-success",
+                                    "B+" or "B" or "B-" => "bg-primary",
+                                    "C+" or "C" => "bg-info",
+                                    "C-" or "D+" or "D" => "bg-warning",
+                                    _ => "bg-secondary"
+                                };
+
+                                <tr>
+                                    <td class="align-middle">
+                                        <strong class="text-primary">@row["CourseCode"]</strong>
+                                    </td>
+                                    <td class="align-middle">@row["CourseName"]</td>
+                                    <td class="align-middle">
+                                        <span class="badge bg-light text-dark">@row["CreditHours"] hrs</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <span class="badge @badgeClass">@grade</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        @row["Term"] @row["AcademicYear"]
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                    <p class="mt-2 mb-0">No completed courses yet.</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,178 @@
+﻿@page
+@model StudentDashboardModel
+@{
+    ViewData["Title"] = "Student Dashboard";
+}
+
+<div class="container mt-4 fade-in-up">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0" style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white;">
+                <div class="card-body p-4">
+                    <h1 class="display-5 fw-bold mb-2">
+                        <i class="bi bi-emoji-smile me-3"></i>Welcome back, @Model.StudentName!
+                    </h1>
+                    <p class="lead mb-0">
+                        <i class="bi bi-mortarboard-fill me-2"></i>@Model.Major
+                        <span class="ms-3">
+                            <i class="bi bi-check-circle-fill me-2"></i>@Model.EnrollmentStatus
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card h-100 text-center" style="border-left-color: #3b82f6;">
+                <div class="card-body">
+                    <i class="bi bi-star-fill text-primary" style="font-size: 2rem;"></i>
+                    <h6 class="mt-3">Current GPA</h6>
+                    <h2 class="text-primary">@Model.CurrentGPA.ToString("F2")</h2>
+                    <p class="small text-muted mb-0">Out of 4.00</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card h-100 text-center" style="border-left-color: #10b981;">
+                <div class="card-body">
+                    <i class="bi bi-bookmark-check-fill text-success" style="font-size: 2rem;"></i>
+                    <h6 class="mt-3">Credits Earned</h6>
+                    <h2 class="text-success">@Model.TotalCreditsEarned</h2>
+                    <p class="small text-muted mb-0">of 120 required</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card h-100 text-center" style="border-left-color: #f59e0b;">
+                <div class="card-body">
+                    <i class="bi bi-journal-check text-warning" style="font-size: 2rem;"></i>
+                    <h6 class="mt-3">Courses Completed</h6>
+                    <h2 class="text-warning">@Model.CoursesCompleted</h2>
+                    <p class="small text-muted mb-0">Courses passed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card h-100 text-center" style="border-left-color: #8b5cf6;">
+                <div class="card-body">
+                    <i class="bi bi-trophy-fill" style="font-size: 2rem; color: #8b5cf6;"></i>
+                    <h6 class="mt-3">Completion</h6>
+                    <h2 style="color: #8b5cf6;">@((Model.TotalCreditsEarned * 100 / 120).ToString("F0"))%</h2>
+                    <p class="small text-muted mb-0">Degree progress</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Cards -->
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card h-100 border-0">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots-fill me-2"></i>Chat with Advisor
+                    </h5>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <p class="flex-grow-1">
+                        Get instant answers about courses, requirements, and graduation planning from our AI academic advisor.
+                    </p>
+                    <button class="btn w-100 text-white"
+                            style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);"
+                            data-bs-toggle="modal"
+                            data-bs-target="#disclaimerModal">
+                        <i class="bi bi-robot me-2"></i>Start Chat
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card h-100 border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart-line-fill me-2"></i>View Progress
+                    </h5>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <p class="flex-grow-1">
+                        Track your degree completion, view completed courses, and see remaining requirements.
+                    </p>
+                    <a href="/Progress" class="btn btn-success w-100">
+                        <i class="bi bi-arrow-right-circle me-2"></i>View Progress
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card h-100 border-0">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-check-fill me-2"></i>Course Planner
+                    </h5>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <p class="flex-grow-1">
+                        Plan your courses semester by semester and build your path to graduation.
+                    </p>
+                    <a href="/Planner" class="btn btn-info w-100">
+                        <i class="bi bi-calendar-event me-2"></i>Plan Courses
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Tips -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info border-0">
+                <h6 class="mb-2">
+                    <i class="bi bi-lightbulb-fill me-2"></i><strong>Quick Tips:</strong>
+                </h6>
+                <ul class="mb-0 small">
+                    <li>Check your progress regularly to stay on track for graduation</li>
+                    <li>Use the planner to map out your remaining semesters</li>
+                    <li>Chat with the AI advisor anytime you have questions about courses or requirements</li>
+                    <li>Maintain at least a 2.0 GPA in all business coursework to be eligible for graduation</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Disclaimer Modal -->
+<div class="modal fade" id="disclaimerModal" tabindex="-1"
+     aria-labelledby="disclaimerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white;">
+                <h5 class="modal-title" id="disclaimerModalLabel">
+                    <i class="bi bi-info-circle-fill me-2"></i>Chat Disclaimer
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p><strong><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Please Note:</strong></p>
+                <p>This session will be logged and will be seen by your advisor.</p>
+                <p class="mb-0">By proceeding, you acknowledge and agree to this policy.</p>
+            </div>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Cancel
+                </button>
+                <a href="/Chat" class="btn text-white"
+                   style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    <i class="bi bi-check-circle me-2"></i>I Understand, Continue
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
