@@ -36,6 +36,8 @@ public class AdminDashboardModel : PageModel
     [BindProperty]
     public int BulletinYear { get; set; } = DateTime.Now.Year;
     [BindProperty]
+    public string BulletinCategory { get; set; } = "Major";
+    [BindProperty]
     public string BulletinDescription { get; set; } = string.Empty;
     [BindProperty]
     public string DocType { get; set; } = "Syllabus";
@@ -150,15 +152,29 @@ public class AdminDashboardModel : PageModel
         try
         {
             var azureConnStr = _config["AzureBlobStorage:ConnectionString"];
-            var containerName = _config["AzureBlobStorage:BulletinContainer"] ?? "bulletins";
+
+            // Route to correct container based on category
+            string containerName = BulletinCategory switch
+            {
+                "Minor" => "minors",
+                _ => "bulletins" // Major, Core39, General
+            };
+            // DEBUG: Use logger instead of Console
+            var logger = HttpContext.RequestServices.GetRequiredService<ILogger<AdminDashboardModel>>();
+            logger.LogWarning("=== AZURE DEBUG ===");
+            logger.LogWarning($"Connection String Length: {azureConnStr?.Length ?? 0}");
+            logger.LogWarning($"Is Null or Empty: {string.IsNullOrEmpty(azureConnStr)}");
+            logger.LogWarning($"Container Name: {containerName}");
+            logger.LogWarning($"Category: {BulletinCategory}");
+            logger.LogWarning("===================");
 
             string fileUrl;
 
             // If Azure not yet configured, save locally instead
-            if (string.IsNullOrEmpty(azureConnStr) ||
-                azureConnStr == "Insert_AZURE_KEY_HERE")
+            if (string.IsNullOrEmpty(azureConnStr))
             {
-                fileUrl = await SaveLocalAsync(file, "bulletins", BulletinYear.ToString());
+                string localFolder = BulletinCategory == "Minor" ? "minors" : "bulletins";
+                fileUrl = await SaveLocalAsync(file, localFolder, BulletinYear.ToString());
             }
             else
             {
@@ -180,12 +196,12 @@ public class AdminDashboardModel : PageModel
             string bulletinYearFormatted = $"{BulletinYear}-{BulletinYear + 1}";
 
             string insert = $@"
-             INSERT INTO Bulletins 
-                 (AcademicYear, BulletinYear, BulletinType, FileName, FilePath, FileSize, UploadedBy, Description)
-             VALUES 
-                ({BulletinYear}, '{bulletinYearFormatted}', 'Undergraduate', '{MySqlEscape(file.FileName)}',
-                '{MySqlEscape(fileUrl)}', {file.Length}, 1,
-                '{MySqlEscape(BulletinDescription ?? $"Bulletin {bulletinYearFormatted}")}')";
+                INSERT INTO Bulletins 
+                    (AcademicYear, BulletinYear, BulletinType, BulletinCategory, FileName, FilePath, FileSize, UploadedBy, Description)
+                VALUES 
+                    ({BulletinYear}, '{bulletinYearFormatted}', 'Undergraduate', '{MySqlEscape(BulletinCategory)}',
+                    '{MySqlEscape(file.FileName)}', '{MySqlEscape(fileUrl)}', {file.Length}, 1,
+                    '{MySqlEscape(BulletinDescription ?? $"{BulletinCategory} Bulletin {bulletinYearFormatted}")}')";
 
             int rows = _dbHelper.ExecuteNonQuery(insert, out string dbError);
 
@@ -249,7 +265,7 @@ public class AdminDashboardModel : PageModel
             string fileUrl;
 
             if (string.IsNullOrEmpty(azureConnStr) ||
-                azureConnStr == "PASTE_AZURE_KEY_HERE")
+                azureConnStr == "PASTSE_HERE_KEY")
             {
                 fileUrl = await SaveLocalAsync(file, "documents", DocType.ToLower());
             }
@@ -321,10 +337,10 @@ public class AdminDashboardModel : PageModel
     private void LoadBulletins()
     {
         Bulletins = _dbHelper.ExecuteQuery(
-            @"SELECT BulletinID, AcademicYear, FileName, FileSize, UploadDate, Description 
+            @"SELECT BulletinID, AcademicYear, BulletinCategory, FileName, FileSize, UploadDate, Description 
               FROM Bulletins 
               WHERE IsActive=1 
-              ORDER BY AcademicYear DESC",
+              ORDER BY BulletinCategory, AcademicYear DESC",
             out _);
     }
 
