@@ -45,6 +45,7 @@ namespace CS_483_CSI_477.Pages
         private const string CATALOG_JSON_KEY = "ParsedCatalogJson";
         private const string BULLETIN_YEAR_KEY = "BulletinYear";
         private readonly PrerequisiteService _prereqService;
+        private readonly PlannerCommandService _plannerCommands;
 
         public ChatModel(
             DatabaseHelper dbHelper,
@@ -56,7 +57,8 @@ namespace CS_483_CSI_477.Pages
             PdfRagService ragService,
             SupportingDocsRagService docsRagService,
             IConfiguration configuration,
-            PrerequisiteService prereqService)
+            PrerequisiteService prereqService,
+            PlannerCommandService plannerCommands)
         {
             _dbHelper = dbHelper;
             _chatLogStore = chatLogStore;
@@ -68,6 +70,7 @@ namespace CS_483_CSI_477.Pages
             _docsRagService = docsRagService;
             _configuration = configuration;
             _prereqService = prereqService;
+            _plannerCommands = plannerCommands;
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -98,7 +101,7 @@ namespace CS_483_CSI_477.Pages
             await EnsureStudentContextLoadedAsync();
             Messages = await _chatLogStore.LoadAsync(ChatId);
 
-            // ===== PDF upload =====
+            // ----  PDF upload ----
             if (UploadedPdf != null && UploadedPdf.Length > 0)
             {
                 var ext = Path.GetExtension(UploadedPdf.FileName).ToLowerInvariant();
@@ -598,8 +601,112 @@ namespace CS_483_CSI_477.Pages
         // ------------------------
         // MAIN RESPONSE WITH RAG
         // ------------------------
+
+        // ------------------------
+        // PLANNER COMMAND PARSER
+        // -----------------------
+        private static bool TryParsePlannerCommand(
+            string userMessage,
+            out string action,
+            out string courseCode,
+            out string term1,
+            out int year1,
+            out string term2,
+            out int year2)
+        {
+            action = "";
+            courseCode = "";
+            term1 = "";
+            year1 = 0;
+            term2 = "";
+            year2 = 0;
+
+            var msg = userMessage?.Trim() ?? "";
+            if (msg.Length == 0) return false;
+
+            // Match planner commands like:
+            // "add CS 311 to Fall 2026"
+            // "remove CS 311 from spring 2027"
+            // "move CS 311 from fall 2026 to spring 2027"
+
+            var addRx = new Regex(
+                @"\b(?<action>add|plan)\b\s+(?<code>[A-Z]{2,4}\s*\d{3})\s+(?:to|in)\s+(?<term>fall|spring|summer)\s+(?<year>\d{4})\b",
+                RegexOptions.IgnoreCase);
+
+            var remRx = new Regex(
+                @"\b(?<action>remove|delete|unplan)\b\s+(?<code>[A-Z]{2,4}\s*\d{3})\s+from\s+(?<term>fall|spring|summer)\s+(?<year>\d{4})\b",
+                RegexOptions.IgnoreCase);
+
+            var moveRx = new Regex(
+                @"\b(?<action>move)\b\s+(?<code>[A-Z]{2,4}\s*\d{3})\s+from\s+(?<term1>fall|spring|summer)\s+(?<year1>\d{4})\s+to\s+(?<term2>fall|spring|summer)\s+(?<year2>\d{4})\b",
+                RegexOptions.IgnoreCase);
+
+            Match m = moveRx.Match(msg);
+            if (m.Success)
+            {
+                action = "move";
+                courseCode = m.Groups["code"].Value;
+                term1 = m.Groups["term1"].Value;
+                year1 = int.Parse(m.Groups["year1"].Value);
+                term2 = m.Groups["term2"].Value;
+                year2 = int.Parse(m.Groups["year2"].Value);
+                return true;
+            }
+
+            m = addRx.Match(msg);
+            if (m.Success)
+            {
+                action = "add";
+                courseCode = m.Groups["code"].Value;
+                term1 = m.Groups["term"].Value;
+                year1 = int.Parse(m.Groups["year"].Value);
+                return true;
+            }
+
+            m = remRx.Match(msg);
+            if (m.Success)
+            {
+                action = "remove";
+                courseCode = m.Groups["code"].Value;
+                term1 = m.Groups["term"].Value;
+                year1 = int.Parse(m.Groups["year"].Value);
+                return true;
+            }
+
+            return false;
+        }
+
+
         private async Task<string> GetAdvisorResponseAsync(string userMessage)
         {
+            // Handle planner commands FIRST
+            var sid = HttpContext.Session.GetInt32("StudentID");
+            if (sid.HasValue)
+            {
+                if (TryParsePlannerCommand(userMessage,
+                        out var action,
+                        out var code,
+                        out var term1,
+                        out var year1,
+                        out var term2,
+                        out var year2))
+                {
+                    PlannerCommandResult result = action switch
+                    {
+                        "add" => _plannerCommands.AddPlannedCourse(sid.Value, code, term1, year1),
+                        "remove" => _plannerCommands.RemovePlannedCourse(sid.Value, code, term1, year1),
+                        "move" => _plannerCommands.MovePlannedCourse(sid.Value, code, term1, year1, term2, year2),
+                        _ => new PlannerCommandResult { Success = false, Message = "❌ Unknown planner action." }
+                    };
+
+                    if (result.Success)
+                        return result.Message + "\n\n(Refresh the Planner page to see the update.)";
+
+                    return result.Message;
+                }
+            }
+
+            // Continue with existing chatbot logic
             var studentContext = HttpContext.Session.GetString(STUDENT_CONTEXT_KEY) ?? "(No student DB context loaded.)";
 
             bool wantsProfile =
@@ -631,7 +738,6 @@ namespace CS_483_CSI_477.Pages
                     return "I parsed the PDF, but I couldn't find any remaining required/elective courses to recommend.";
                 }
 
-                var sid = HttpContext.Session.GetInt32("StudentID");
                 var prompt = BuildPlanningPrompt(userMessage, studentContext, PdfFileName ?? "Uploaded PDF", rec, sid);
                 return await _gemini.GenerateWithHistoryAsync(Messages, prompt);
             }
