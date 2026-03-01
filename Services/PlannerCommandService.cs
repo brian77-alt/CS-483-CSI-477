@@ -14,15 +14,17 @@ namespace CS_483_CSI_477.Services
     public sealed class PlannerCommandService
     {
         private readonly DatabaseHelper _db;
+        private readonly ConflictDetectionService _conflicts;
 
-        public PlannerCommandService(DatabaseHelper db)
+        public PlannerCommandService(DatabaseHelper db, ConflictDetectionService conflicts)
         {
             _db = db;
+            _conflicts = conflicts;
         }
 
-        // =========================
+        // ----------------
         // PUBLIC COMMANDS
-        // =========================
+        // ----------------
         public PlannerCommandResult AddPlannedCourse(int studentId, string courseCode, string term, int year)
         {
             courseCode = NormalizeCourseCode(courseCode);
@@ -32,19 +34,26 @@ namespace CS_483_CSI_477.Services
             if (!string.IsNullOrEmpty(err1)) return Fail(err1);
             if (courseId == null) return Fail($"Course code '{courseCode}' not found in Courses table.");
 
+            // Check for conflicts BEFORE adding
+            var conflictCheck = _conflicts.CheckCourseConflicts(studentId, courseCode, term, year);
+            if (conflictCheck.HasConflicts)
+            {
+                return Fail(conflictCheck.Message);
+            }
+
             var planId = GetOrCreatePlanId(studentId, out var err2);
             if (!string.IsNullOrEmpty(err2)) return Fail(err2);
             if (planId == null) return Fail("Could not find or create a plan for this student.");
 
             // Prevent duplicates
             var existsSql = @"
-SELECT 1
-FROM PlannedCourses
-WHERE PlanID = @pid
-  AND CourseID = @cid
-  AND PlannedTerm = @term
-  AND PlannedYear = @year
-LIMIT 1;";
+                SELECT 1
+                FROM PlannedCourses
+                WHERE PlanID = @pid
+                AND CourseID = @cid
+                AND PlannedTerm = @term
+                AND PlannedYear = @year
+                LIMIT 1;";
 
             var exists = _db.ExecuteQuery(existsSql, new[]
             {
@@ -59,13 +68,13 @@ LIMIT 1;";
                 return Fail($"'{courseCode}' is already planned for {term} {year}.");
 
             // YearInPlan is NOT NULL in your schema -> we must provide it.
-            // We'll compute a reasonable number from StartYear if possible; otherwise default to 1.
+            // compute a reasonable number from StartYear if possible; otherwise default to 1.
             int yearInPlan = GetYearInPlan(studentId, year, out var errYip);
             if (!string.IsNullOrEmpty(errYip)) return Fail(errYip);
 
             var insertSql = @"
-INSERT INTO PlannedCourses (PlanID, CourseID, PlannedTerm, PlannedYear, YearInPlan, IsCompleted)
-VALUES (@pid, @cid, @term, @year, @yip, 0);";
+                INSERT INTO PlannedCourses (PlanID, CourseID, PlannedTerm, PlannedYear, YearInPlan, IsCompleted)
+                VALUES (@pid, @cid, @term, @year, @yip, 0);";
 
             var rows = _db.ExecuteNonQuery(insertSql, new[]
             {
@@ -96,11 +105,11 @@ VALUES (@pid, @cid, @term, @year, @yip, 0);";
             if (planId == null) return Fail("Could not find plan for this student.");
 
             var deleteSql = @"
-DELETE FROM PlannedCourses
-WHERE PlanID = @pid
-  AND CourseID = @cid
-  AND PlannedTerm = @term
-  AND PlannedYear = @year;";
+                DELETE FROM PlannedCourses
+                WHERE PlanID = @pid
+                 AND CourseID = @cid
+                AND PlannedTerm = @term
+                AND PlannedYear = @year;";
 
             var rows = _db.ExecuteNonQuery(deleteSql, new[]
             {
@@ -132,14 +141,14 @@ WHERE PlanID = @pid
             return Ok($"✅ Moved {NormalizeCourseCode(courseCode)} from {NormalizeTerm(fromTerm)} {fromYear} to {NormalizeTerm(toTerm)} {toYear}.");
         }
 
-        // =========================
+        // ---------------------
         // PLAN LOOKUP / CREATE
-        // =========================
+        // ---------------------
         private int? GetOrCreatePlanId(int studentId, out string error)
         {
             error = "";
 
-            // 1) Existing plan?
+            // 1: Existing plan?
             var sel = @"
 SELECT PlanID
 FROM StudentDegreePlans
@@ -156,7 +165,8 @@ LIMIT 1;";
             if (dt != null && dt.Rows.Count > 0)
                 return Convert.ToInt32(dt.Rows[0]["PlanID"]);
 
-            // 2) Need to create a plan -> required fields:
+            // 2:
+            //Need to create a plan -> required fields:
             // StudentID, DegreeID, StartTerm, StartYear, ExpectedGraduationTerm, ExpectedGraduationYear
 
             var degreeId = GetStudentDegreeId(studentId, out var err2);
@@ -181,10 +191,10 @@ LIMIT 1;";
             var planName = "My Plan";
 
             var ins = @"
-INSERT INTO StudentDegreePlans
-(StudentID, DegreeID, PlanName, StartTerm, StartYear, ExpectedGraduationTerm, ExpectedGraduationYear, IsActive, GeneratedByAI)
-VALUES
-(@sid, @did, @pname, @sterm, @syear, @gterm, @gyear, 1, 1);";
+                INSERT INTO StudentDegreePlans
+                (StudentID, DegreeID, PlanName, StartTerm, StartYear, ExpectedGraduationTerm, ExpectedGraduationYear, IsActive, GeneratedByAI)
+                VALUES
+                (@sid, @did, @pname, @sterm, @syear, @gterm, @gyear, 1, 1);";
 
             var rows = _db.ExecuteNonQuery(ins, new[]
             {
@@ -200,7 +210,7 @@ VALUES
             if (!string.IsNullOrEmpty(err5)) { error = err5; return null; }
             if (rows <= 0) { error = "Could not create StudentDegreePlans row."; return null; }
 
-            // 3) Re-select PlanID
+            // 3: Re-select PlanID
             var dt2 = _db.ExecuteQuery(sel, new[]
             {
                 new MySqlParameter("@sid", MySqlDbType.Int32){ Value = studentId }
@@ -216,11 +226,11 @@ VALUES
         {
             error = "";
             var sql = @"
-SELECT dp.DegreeID
-FROM Students s
-JOIN DegreePrograms dp ON s.Major = dp.DegreeName
-WHERE s.StudentID = @sid
-LIMIT 1;";
+                SELECT dp.DegreeID
+                FROM Students s
+                JOIN DegreePrograms dp ON s.Major = dp.DegreeName
+                WHERE s.StudentID = @sid
+                LIMIT 1;";
 
             var dt = _db.ExecuteQuery(sql, new[]
             {
@@ -287,11 +297,11 @@ LIMIT 1;";
 
             // Try to compute based on StartYear from StudentDegreePlans if it exists
             var sql = @"
-SELECT StartYear
-FROM StudentDegreePlans
-WHERE StudentID = @sid
-ORDER BY PlanID DESC
-LIMIT 1;";
+                SELECT StartYear
+                FROM StudentDegreePlans
+            WHERE StudentID = @sid
+            ORDER BY PlanID DESC
+            LIMIT 1;";
 
             var dt = _db.ExecuteQuery(sql, new[]
             {
@@ -313,9 +323,9 @@ LIMIT 1;";
             return 1;
         }
 
-        // =========================
+        // --------
         // HELPERS
-        // =========================
+        // --------
         private int? GetCourseId(string courseCode, out string error)
         {
             error = "";

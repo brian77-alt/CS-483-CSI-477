@@ -46,6 +46,7 @@ namespace CS_483_CSI_477.Pages
         private const string BULLETIN_YEAR_KEY = "BulletinYear";
         private readonly PrerequisiteService _prereqService;
         private readonly PlannerCommandService _plannerCommands;
+        private readonly GpaCalculatorService _gpaCalc;
 
         public ChatModel(
             DatabaseHelper dbHelper,
@@ -58,7 +59,8 @@ namespace CS_483_CSI_477.Pages
             SupportingDocsRagService docsRagService,
             IConfiguration configuration,
             PrerequisiteService prereqService,
-            PlannerCommandService plannerCommands)
+            PlannerCommandService plannerCommands,
+            GpaCalculatorService gpaCalc)
         {
             _dbHelper = dbHelper;
             _chatLogStore = chatLogStore;
@@ -71,6 +73,7 @@ namespace CS_483_CSI_477.Pages
             _configuration = configuration;
             _prereqService = prereqService;
             _plannerCommands = plannerCommands;
+            _gpaCalc = gpaCalc;
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -593,6 +596,15 @@ namespace CS_483_CSI_477.Pages
                 sb.AppendLine("- (Core 39 data not available)");
             }
 
+            sb.AppendLine();
+
+            // GPA Calculation Details
+            var gpaCalc = _gpaCalc.CalculateCurrentGpa(studentId);
+            sb.AppendLine("GPA Calculation Details:");
+            sb.AppendLine($"- Current GPA: {gpaCalc.CurrentGpa} (calculated from {gpaCalc.CompletedCredits} completed credits)");
+            sb.AppendLine($"- Total Quality Points: {gpaCalc.CumulativePoints}");
+            sb.AppendLine($"- Courses included in GPA: {gpaCalc.Courses.Count}");
+
             sb.AppendLine("=== END STUDENT DB CONTEXT ===");
 
             return Task.FromResult(sb.ToString());
@@ -602,9 +614,7 @@ namespace CS_483_CSI_477.Pages
         // MAIN RESPONSE WITH RAG
         // ------------------------
 
-        // ------------------------
         // PLANNER COMMAND PARSER
-        // -----------------------
         private static bool TryParsePlannerCommand(
             string userMessage,
             out string action,

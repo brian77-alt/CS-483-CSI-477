@@ -42,13 +42,13 @@ namespace CS_483_CSI_477.Pages
             // NOTE: Your Students table does NOT have ExpectedGraduationYear.
             // It has EnrollmentYear and ExpectedGraduationDate.
             string query = @"
-SELECT 
-    CONCAT(FirstName, ' ', LastName) AS FullName,
-    Major,
-    EnrollmentYear
-FROM Students
-WHERE StudentID = @sid
-LIMIT 1;";
+                SELECT 
+                    CONCAT(FirstName, ' ', LastName) AS FullName,
+                    Major,
+                    EnrollmentYear
+                FROM Students
+                WHERE StudentID = @sid
+                LIMIT 1;";
 
             var result = _dbHelper.ExecuteQuery(query, new[]
             {
@@ -93,24 +93,24 @@ LIMIT 1;";
                 });
             }
 
-            // ✅ Your real schema:
+            // Your real schema:
             // PlannedCourses: PlanID, PlannedTerm, PlannedYear
             // StudentDegreePlans: PlanID, StudentID
             string query = @"
-SELECT 
-    pc.PlannedCourseID,
-    c.CourseCode,
-    c.CourseName,
-    c.CreditHours,
-    pc.PlannedTerm,
-    pc.PlannedYear,
-    pc.IsCompleted
-FROM PlannedCourses pc
-JOIN Courses c ON pc.CourseID = c.CourseID
-JOIN StudentDegreePlans sdp ON pc.PlanID = sdp.PlanID
-WHERE sdp.StudentID = @sid
-  AND (sdp.IsActive = 1 OR sdp.IsActive IS NULL)
-ORDER BY pc.PlannedYear, pc.PlannedTerm;";
+                SELECT 
+                    pc.PlannedCourseID,
+                    c.CourseCode,
+                    c.CourseName,
+                    c.CreditHours,
+                    pc.PlannedTerm,
+                    pc.PlannedYear,
+                    pc.IsCompleted
+                FROM PlannedCourses pc
+                JOIN Courses c ON pc.CourseID = c.CourseID
+                JOIN StudentDegreePlans sdp ON pc.PlanID = sdp.PlanID
+                WHERE sdp.StudentID = @sid
+                AND (sdp.IsActive = 1 OR sdp.IsActive IS NULL)
+                ORDER BY pc.PlannedYear, pc.PlannedTerm;";
 
             var result = _dbHelper.ExecuteQuery(query, new[]
             {

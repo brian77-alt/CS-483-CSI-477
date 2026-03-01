@@ -23,6 +23,9 @@ builder.Services.AddSingleton<CourseCatalogService>();
 builder.Services.AddSingleton<PdfRagService>();
 builder.Services.AddSingleton<SupportingDocsRagService>();
 builder.Services.AddSingleton<PrerequisiteService>();
+builder.Services.AddSingleton<GpaCalculatorService>();
+builder.Services.AddSingleton<PlannerCommandService>();
+builder.Services.AddSingleton <ConflictDetectionService>();
 
 builder.Services.AddHttpClient<GeminiService>(client =>
 {
