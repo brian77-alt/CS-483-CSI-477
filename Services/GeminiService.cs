@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using CS_483_CSI_477.Pages;
+using System.Text;
 using System.Text.Json;
 
 namespace CS_483_CSI_477.Services
@@ -16,7 +17,7 @@ namespace CS_483_CSI_477.Services
             _logger = logger;
         }
 
-        public async Task<string> GenerateAsync(string prompt)
+        public async Task<string> GenerateWithHistoryAsync(List<ChatMessage> conversationHistory, string currentPrompt)
         {
             var apiKey = _config["Gemini:ApiKey"];
             var model = _config["Gemini:Model"] ?? "gemini-2.5-flash";
@@ -25,12 +26,31 @@ namespace CS_483_CSI_477.Services
             if (string.IsNullOrWhiteSpace(apiKey))
                 throw new InvalidOperationException("Gemini API key not configured (Gemini:ApiKey).");
 
+            // Build conversation history for Gemini
+            var contents = new List<object>();
+
+            // Add previous messages (max last 6 messages to stay within token limits)
+            var recentHistory = conversationHistory.TakeLast(6).ToList();
+            foreach (var msg in recentHistory)
+            {
+                var role = msg.Role == "assistant" ? "model" : "user";
+                contents.Add(new
+                {
+                    role = role,
+                    parts = new object[] { new { text = msg.Content } }
+                });
+            }
+
+            // Add current prompt
+            contents.Add(new
+            {
+                role = "user",
+                parts = new object[] { new { text = currentPrompt } }
+            });
+
             var requestBody = new
             {
-                contents = new[]
-                {
-                    new { role = "user", parts = new object[] { new { text = prompt } } }
-                },
+                contents = contents,
                 generationConfig = new
                 {
                     temperature = 0.2,
@@ -42,7 +62,6 @@ namespace CS_483_CSI_477.Services
 
             var json = JsonSerializer.Serialize(requestBody);
             using var content = new StringContent(json, Encoding.UTF8, "application/json");
-
             var url = $"{apiBase}/models/{model}:generateContent?key={apiKey}";
             var resp = await _http.PostAsync(url, content);
             var respJson = await resp.Content.ReadAsStringAsync();

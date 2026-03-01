@@ -498,19 +498,20 @@ namespace CS_483_CSI_477.Pages
             var enrollmentYear = row["EnrollmentYear"] != DBNull.Value ? row["EnrollmentYear"].ToString() : "N/A";
 
             var completedSql = @"
-SELECT 
-    c.CourseCode,
-    c.CourseName,
-    c.CreditHours,
-    sch.Grade,
-    sch.Term,
-    sch.AcademicYear
-FROM StudentCourseHistory sch
-JOIN Courses c ON sch.CourseID = c.CourseID
-WHERE sch.StudentID = @studentId
-  AND sch.Status = 'Completed'
-ORDER BY sch.AcademicYear DESC, sch.Term DESC;
-";
+                SELECT 
+                    c.CourseCode,
+                    c.CourseName,
+                    c.CreditHours,
+                    sch.Grade,
+                    sch.Term,
+                    sch.AcademicYear,
+                    sch.Status
+                FROM StudentCourseHistory sch
+                JOIN Courses c ON sch.CourseID = c.CourseID
+                WHERE sch.StudentID = @studentId
+                AND sch.Status IN ('Completed', 'In Progress')
+                ORDER BY sch.Status DESC, sch.AcademicYear DESC, sch.Term DESC;
+                ";
             var completed = _dbHelper.ExecuteQuery(completedSql, new[]
             {
                 new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = studentId }
@@ -528,23 +529,72 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
             sb.AppendLine($"Credits Earned: {earned} / {required}");
             sb.AppendLine($"Degree Code: {degreeCode}");
             sb.AppendLine();
-            sb.AppendLine("Completed Courses (from StudentCourseHistory):");
+            sb.AppendLine("Completed and In-Progress Courses:");
             if (completed != null && completed.Rows.Count > 0)
             {
                 foreach (DataRow r in completed.Rows)
                 {
-                    sb.AppendLine($"- {r["CourseCode"]}: {r["CourseName"]} ({r["CreditHours"]} hrs) Grade {r["Grade"]} — {r["Term"]} {r["AcademicYear"]}");
+                    var courseStatus = r["Status"].ToString();
+                    var statusTag = courseStatus == "In Progress" ? " [IN PROGRESS]" : "";
+                    sb.AppendLine($"- {r["CourseCode"]}: {r["CourseName"]} ({r["CreditHours"]} hrs) Grade {r["Grade"]} — {r["Term"]} {r["AcademicYear"]}{statusTag}");
                 }
             }
             else sb.AppendLine("- (none found)");
+
+            // Core 39 Progress
+            sb.AppendLine();
+            sb.AppendLine("Core 39 General Education Progress:");
+
+            var core39Sql = @"
+    SELECT 
+        c39.CategoryName,
+        c39.CreditsRequired,
+        COALESCE(SUM(c.CreditHours), 0) as CreditsEarned
+    FROM Core39Requirements c39
+    LEFT JOIN Courses c ON (
+        (c39.CategoryCode IS NOT NULL AND c.CourseCode IN (
+            SELECT TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(c39.Description, ',', numbers.n), ',', -1))
+            FROM (SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) numbers
+            WHERE CHAR_LENGTH(c39.Description) - CHAR_LENGTH(REPLACE(c39.Description, ',', '')) >= numbers.n - 1
+        ))
+        OR c39.CategoryCode IS NULL
+    )
+    LEFT JOIN StudentCourseHistory sch ON c.CourseID = sch.CourseID 
+        AND sch.StudentID = @studentId 
+        AND sch.Status = 'Completed'
+    WHERE c39.IsActive = 1 
+        AND c39.Core39ID BETWEEN 22 AND 33
+    GROUP BY c39.CategoryName, c39.CreditsRequired
+    ORDER BY c39.Core39ID";
+
+            var core39 = _dbHelper.ExecuteQuery(core39Sql, new[]
+            {
+    new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = studentId }
+}, out var c39err);
+
+            if (core39 != null && core39.Rows.Count > 0)
+            {
+                foreach (DataRow r in core39.Rows)
+                {
+                    var category = r["CategoryName"].ToString();
+                    var requiredCredits = r["CreditsRequired"].ToString();
+                    var earnedCredits = r["CreditsEarned"].ToString();
+                    sb.AppendLine($"- {category}: {earnedCredits}/{requiredCredits} credits");
+                }
+            }
+            else
+            {
+                sb.AppendLine("- (Core 39 data not available)");
+            }
+
             sb.AppendLine("=== END STUDENT DB CONTEXT ===");
 
             return Task.FromResult(sb.ToString());
         }
 
-        // =========================
+        // ------------------------
         // MAIN RESPONSE WITH RAG
-        // =========================
+        // ------------------------
         private async Task<string> GetAdvisorResponseAsync(string userMessage)
         {
             var studentContext = HttpContext.Session.GetString(STUDENT_CONTEXT_KEY) ?? "(No student DB context loaded.)";
@@ -579,7 +629,7 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
                 }
 
                 var prompt = BuildPlanningPrompt(userMessage, studentContext, PdfFileName ?? "Uploaded PDF", rec);
-                return await _gemini.GenerateAsync(prompt);
+                return await _gemini.GenerateWithHistoryAsync(Messages, prompt);
             }
 
             // General question - use RAG to find relevant bulletin content
@@ -593,6 +643,12 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
                 documentYear: bulletinYear,
                 maxDocuments: 3);
 
+            // Debug: Check if Core 39 is in student context
+            _logger.LogInformation("=== STUDENT CONTEXT CHECK ===");
+            _logger.LogInformation($"Contains 'Core 39': {studentContext.Contains("Core 39 General Education Progress:")}");
+            _logger.LogInformation($"Contains 'Completed': {studentContext.Contains("Completed and In-Progress Courses:")}");
+            _logger.LogInformation("=== END CHECK ===");
+
             var generalPrompt = BuildGeneralPromptWithRAG(
                 userMessage,
                 studentContext,
@@ -601,7 +657,12 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
                 ragHits,
                 supportingDocs);
 
-            var response = await _gemini.GenerateAsync(generalPrompt);
+            // Debug: Log the prompt to see what AI receives
+            _logger.LogInformation("=== PROMPT SENT TO AI ===");
+            _logger.LogInformation(generalPrompt);
+            _logger.LogInformation("=== END PROMPT ===");
+
+            var response = await _gemini.GenerateWithHistoryAsync(Messages, generalPrompt);
 
             if (ragHits.Count > 0 || supportingDocs.Count > 0)
             {
@@ -699,8 +760,33 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
                 ".Trim());
 
             sb.AppendLine();
-            sb.AppendLine("Student Snapshot (short):");
+            sb.AppendLine("Student Snapshot:");
             sb.AppendLine(snap);
+            sb.AppendLine();
+
+            // Add Core 39 and completed courses context
+            if (studentContext.Contains("Core 39 General Education Progress:"))
+            {
+                var core39Section = ExtractSection(studentContext, "Core 39 General Education Progress:", "=== END");
+                if (!string.IsNullOrEmpty(core39Section))
+                {
+                    sb.AppendLine("Core 39 Requirements Status:");
+                    sb.AppendLine(core39Section.Trim());
+                    sb.AppendLine();
+                }
+            }
+
+            if (studentContext.Contains("Completed and In-Progress Courses:"))
+            {
+                var coursesSection = ExtractSection(studentContext, "Completed and In-Progress Courses:", "Core 39");
+                if (!string.IsNullOrEmpty(coursesSection))
+                {
+                    sb.AppendLine("Completed/In-Progress Courses:");
+                    sb.AppendLine(coursesSection.Trim());
+                    sb.AppendLine();
+                }
+            }
+
             sb.AppendLine();
 
             sb.AppendLine($"Source PDF: {catalogName}");
@@ -718,6 +804,27 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
             sb.AppendLine(userQuestion);
 
             return sb.ToString();
+
+        }
+
+        private static string ExtractSection(string text, string startMarker, string endMarker)
+        {
+            var startIndex = text.IndexOf(startMarker, StringComparison.Ordinal);
+            if (startIndex < 0)
+            {
+                Console.WriteLine($"ExtractSection: Start marker '{startMarker}' not found");
+                return "";
+            }
+
+            startIndex += startMarker.Length;
+            var endIndex = text.IndexOf(endMarker, startIndex, StringComparison.Ordinal);
+
+            if (endIndex < 0)
+                endIndex = text.Length;
+
+            var extracted = text.Substring(startIndex, endIndex - startIndex);
+            Console.WriteLine($"ExtractSection: Extracted {extracted.Length} chars from '{startMarker}' to '{endMarker}'");
+            return extracted;
         }
 
         private static string BuildGeneralPromptWithRAG(
@@ -749,23 +856,35 @@ ORDER BY sch.AcademicYear DESC, sch.Term DESC;
                 ".Trim());
 
             sb.AppendLine();
-            sb.AppendLine("Student Snapshot (short):");
+            sb.AppendLine("Student Snapshot:");
             sb.AppendLine(snap);
             sb.AppendLine();
 
-            sb.AppendLine($"Catalog from PDF: {catalogName}");
-
-            // Add RAG content if available
-            if (ragHits.Count > 0)
+            // Add Core 39 and completed courses context
+            if (studentContext.Contains("Core 39 General Education Progress:"))
             {
-                sb.AppendLine();
-                sb.AppendLine("BULLETIN CONTENT (most relevant sections):");
-                foreach (var hit in ragHits)
+                var core39Section = ExtractSection(studentContext, "Core 39 General Education Progress:", "=== END");
+                if (!string.IsNullOrEmpty(core39Section))
                 {
-                    sb.AppendLine($"[Page {hit.Page}] {hit.Snippet}");
+                    sb.AppendLine("Core 39 Requirements Status:");
+                    sb.AppendLine(core39Section.Trim());
                     sb.AppendLine();
                 }
             }
+
+            if (studentContext.Contains("Completed and In-Progress Courses:"))
+            {
+                var coursesSection = ExtractSection(studentContext, "Completed and In-Progress Courses:", "Core 39");
+                if (!string.IsNullOrEmpty(coursesSection))
+                {
+                    sb.AppendLine("Completed/In-Progress Courses:");
+                    sb.AppendLine(coursesSection.Trim());
+                    sb.AppendLine();
+                }
+            }
+
+            sb.AppendLine();
+            sb.AppendLine($"Catalog from PDF: {catalogName}");
 
             // ADD THIS SECTION:
             if (supportingDocs.Count > 0)
