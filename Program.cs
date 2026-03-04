@@ -26,6 +26,7 @@ builder.Services.AddSingleton<PrerequisiteService>();
 builder.Services.AddSingleton<GpaCalculatorService>();
 builder.Services.AddSingleton<PlannerCommandService>();
 builder.Services.AddSingleton <ConflictDetectionService>();
+builder.Services.AddSingleton<AuthenticationService>();
 
 builder.Services.AddHttpClient<GeminiService>(client =>
 {
