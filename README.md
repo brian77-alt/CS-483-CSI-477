@@ -15,6 +15,7 @@ Senior Software Development Projects - Ai Academic Advisor
   "AzureBlobStorage": {
     "ConnectionString": "YOUR_AZURE_KEY_HERE",
     "BulletinContainer": "bulletins",
+    "MinorsContainer": "minors",
     "SupportingDocsContainer": "supporting-docs"
   },
   "FileUpload": {
