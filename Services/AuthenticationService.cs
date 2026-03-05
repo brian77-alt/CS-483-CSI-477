@@ -21,9 +21,7 @@ namespace CS_483_CSI_477.Services
             _dbHelper = dbHelper;
         }
 
-        /// <summary>
         /// Authenticate user with email and password
-        /// </summary>
         public AuthResult Authenticate(string email, string password)
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
@@ -119,25 +117,20 @@ namespace CS_483_CSI_477.Services
             return new AuthResult { Success = false, Message = "Invalid email or password." };
         }
 
-        /// <summary>
         /// Hash a password using BCrypt
-        /// </summary>
+
         public static string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password, 12);
         }
 
-        /// <summary>
         /// Verify a password against a hash
-        /// </summary>
         public static bool VerifyPassword(string password, string hash)
         {
             return BCrypt.Net.BCrypt.Verify(password, hash);
         }
 
-        /// <summary>
         /// Register a new student with hashed password
-        /// </summary>
         public AuthResult RegisterStudent(string email, string password, string firstName, string lastName, string studentIdNumber)
         {
             if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
@@ -193,5 +186,188 @@ namespace CS_483_CSI_477.Services
 
             return new AuthResult { Success = true, Message = "Registration successful! Please log in." };
         }
+
+        /// <summary>
+        /// Generate email verification token
+        /// </summary>
+        public string CreateEmailVerificationToken(int studentId)
+        {
+            var token = Guid.NewGuid().ToString("N");
+            var expiresAt = DateTime.Now.AddHours(24);
+
+            var sql = @"
+        INSERT INTO EmailVerificationTokens (StudentID, Token, ExpiresAt)
+        VALUES (@studentId, @token, @expiresAt)";
+
+            _dbHelper.ExecuteNonQuery(sql, new[]
+            {
+        new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = studentId },
+        new MySqlParameter("@token", MySqlDbType.VarChar) { Value = token },
+        new MySqlParameter("@expiresAt", MySqlDbType.DateTime) { Value = expiresAt }
+    }, out _);
+
+            return token;
+        }
+
+        /// <summary>
+        /// Verify email with token
+        /// </summary>
+        public AuthResult VerifyEmail(string token)
+        {
+            var sql = @"
+        SELECT TokenID, StudentID, ExpiresAt, IsUsed
+        FROM EmailVerificationTokens
+        WHERE Token = @token
+        LIMIT 1";
+
+            var result = _dbHelper.ExecuteQuery(sql, new[]
+            {
+        new MySqlParameter("@token", MySqlDbType.VarChar) { Value = token }
+    }, out var err);
+
+            if (!string.IsNullOrEmpty(err) || result == null || result.Rows.Count == 0)
+            {
+                return new AuthResult { Success = false, Message = "Invalid verification token." };
+            }
+
+            var row = result.Rows[0];
+            var isUsed = Convert.ToBoolean(row["IsUsed"]);
+            var expiresAt = Convert.ToDateTime(row["ExpiresAt"]);
+            var studentId = Convert.ToInt32(row["StudentID"]);
+            var tokenId = Convert.ToInt32(row["TokenID"]);
+
+            if (isUsed)
+            {
+                return new AuthResult { Success = false, Message = "This verification link has already been used." };
+            }
+
+            if (DateTime.Now > expiresAt)
+            {
+                return new AuthResult { Success = false, Message = "This verification link has expired." };
+            }
+
+            // Mark token as used
+            var markUsedSql = "UPDATE EmailVerificationTokens SET IsUsed = 1 WHERE TokenID = @tokenId";
+            _dbHelper.ExecuteNonQuery(markUsedSql, new[]
+            {
+        new MySqlParameter("@tokenId", MySqlDbType.Int32) { Value = tokenId }
+    }, out _);
+
+            // Mark email as verified
+            var verifySql = "UPDATE Students SET EmailVerified = 1 WHERE StudentID = @studentId";
+            _dbHelper.ExecuteNonQuery(verifySql, new[]
+            {
+        new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = studentId }
+    }, out _);
+
+            return new AuthResult { Success = true, Message = "Email verified successfully! You can now log in." };
+        }
+
+        /// <summary>
+        /// Create password reset token
+        /// </summary>
+        public string CreatePasswordResetToken(string email)
+        {
+            var token = Guid.NewGuid().ToString("N");
+            var expiresAt = DateTime.Now.AddHours(1);
+
+            // Check if email exists
+            var checkSql = @"
+        SELECT StudentID FROM Students WHERE Email = @email
+        UNION
+        SELECT AdminID FROM Admins WHERE Email = @email";
+
+            var checkResult = _dbHelper.ExecuteQuery(checkSql, new[]
+            {
+        new MySqlParameter("@email", MySqlDbType.VarChar) { Value = email }
+    }, out _);
+
+            if (checkResult == null || checkResult.Rows.Count == 0)
+            {
+                return ""; // Email not found
+            }
+
+            var sql = @"
+        INSERT INTO PasswordResetTokens (Email, Token, ExpiresAt)
+        VALUES (@email, @token, @expiresAt)";
+
+            _dbHelper.ExecuteNonQuery(sql, new[]
+            {
+        new MySqlParameter("@email", MySqlDbType.VarChar) { Value = email },
+        new MySqlParameter("@token", MySqlDbType.VarChar) { Value = token },
+        new MySqlParameter("@expiresAt", MySqlDbType.DateTime) { Value = expiresAt }
+    }, out _);
+
+            return token;
+        }
+
+        /// Reset password with token
+        public AuthResult ResetPassword(string token, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 8)
+            {
+                return new AuthResult { Success = false, Message = "Password must be at least 8 characters." };
+            }
+
+            var sql = @"
+                SELECT TokenID, Email, ExpiresAt, IsUsed
+                FROM PasswordResetTokens
+                WHERE Token = @token
+                LIMIT 1";
+
+            var result = _dbHelper.ExecuteQuery(sql, new[]
+            {
+                new MySqlParameter("@token", MySqlDbType.VarChar) { Value = token }
+            }, out var err);
+
+            if (!string.IsNullOrEmpty(err) || result == null || result.Rows.Count == 0)
+            {
+                return new AuthResult { Success = false, Message = "Invalid reset token." };
+            }
+
+            var row = result.Rows[0];
+            var isUsed = Convert.ToBoolean(row["IsUsed"]);
+            var expiresAt = Convert.ToDateTime(row["ExpiresAt"]);
+            var email = row["Email"].ToString() ?? "";
+            var tokenId = Convert.ToInt32(row["TokenID"]);
+
+            if (isUsed)
+            {
+                return new AuthResult { Success = false, Message = "This reset link has already been used." };
+            }
+
+            if (DateTime.Now > expiresAt)
+            {
+                return new AuthResult { Success = false, Message = "This reset link has expired." };
+            }
+
+            // Hash new password
+            var passwordHash = HashPassword(newPassword);
+
+            // Update password for student or admin
+            var updateStudentSql = "UPDATE Students SET PasswordHash = @hash WHERE Email = @email";
+            _dbHelper.ExecuteNonQuery(updateStudentSql, new[]
+            {
+                new MySqlParameter("@hash", MySqlDbType.VarChar) { Value = passwordHash },
+                new MySqlParameter("@email", MySqlDbType.VarChar) { Value = email }
+            }, out _);
+
+            var updateAdminSql = "UPDATE Admins SET PasswordHash = @hash WHERE Email = @email";
+            _dbHelper.ExecuteNonQuery(updateAdminSql, new[]
+            {
+                new MySqlParameter("@hash", MySqlDbType.VarChar) { Value = passwordHash },
+                new MySqlParameter("@email", MySqlDbType.VarChar) { Value = email }
+            }, out _);
+
+            // Mark token as used
+            var markUsedSql = "UPDATE PasswordResetTokens SET IsUsed = 1 WHERE TokenID = @tokenId";
+            _dbHelper.ExecuteNonQuery(markUsedSql, new[]
+            {
+                new MySqlParameter("@tokenId", MySqlDbType.Int32) { Value = tokenId }
+            }, out _);
+
+            return new AuthResult { Success = true, Message = "Password reset successfully! You can now log in with your new password." };
+        }
+
     }
 }
