@@ -41,6 +41,10 @@ namespace CS_483_CSI_477.Pages
 
         public IActionResult OnPost()
         {
+            // Sanitize inputs
+            StudentID = InputSanitizer.SanitizeGeneral(StudentID);
+            Password = InputSanitizer.SanitizeGeneral(Password);
+
             if (string.IsNullOrWhiteSpace(StudentID) || string.IsNullOrWhiteSpace(Password))
             {
                 ErrorMessage = "Please enter both login credentials and password.";

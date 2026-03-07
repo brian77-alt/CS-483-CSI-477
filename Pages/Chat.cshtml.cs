@@ -168,6 +168,9 @@ namespace CS_483_CSI_477.Pages
                 }
             }
 
+            // Sanitize input
+            UserMessage = InputSanitizer.SanitizeChat(UserMessage);
+
             // ----- Send Message -----
             if (string.IsNullOrWhiteSpace(UserMessage))
             {
