@@ -120,9 +120,23 @@
         var chatMessages = document.getElementById('chatMessages');
         if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        window.addEventListener('load', function () {
+                window.addEventListener('load', function () {
             var input = document.querySelector('input[name="UserMessage"]');
-            if (input && !input.value) input.focus();
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
         });
+
+        // Clear input on form submit
+        var chatForm = document.querySelector('form[enctype="multipart/form-data"]');
+        if (chatForm) {
+            chatForm.addEventListener('submit', function () {
+                setTimeout(function () {
+                    var input = document.querySelector('input[name="UserMessage"]');
+                    if (input) input.value = '';
+                }, 100);
+            });
+        }
     </script>
 }

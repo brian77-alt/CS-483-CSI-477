@@ -1,0 +1,36 @@
+﻿@page
+@model ParseBulletinCoursesModel
+@{
+    ViewData["Title"] = "Parse Bulletin Courses";
+}
+
+<div class="container mt-4">
+    <h2>Parse All Bulletin Courses</h2>
+    <p>This will scan all uploaded bulletins and extract courses into the database.</p>
+
+    <div class="alert alert-warning">
+        <strong>Warning:</strong> This process may take several minutes. It will parse 221 bulletins.
+    </div>
+
+    <form method="post">
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-file-earmark-text"></i> Parse All Bulletins
+        </button>
+    </form>
+
+    @if (Model.Results.Count > 0)
+    {
+        <div class="card mt-4">
+            <div class="card-header bg-success text-white">
+                <h5>Parse Results</h5>
+                <p class="mb-0">Bulletins Parsed: @Model.BulletinsParsed | Courses Added: @Model.TotalCoursesAdded</p>
+            </div>
+            <div class="card-body" style="max-height: 600px; overflow-y: auto; font-family: monospace; font-size: 0.9rem;">
+                @foreach (var result in Model.Results)
+                {
+                    <div>@result</div>
+                }
+            </div>
+        </div>
+    }
+</div>

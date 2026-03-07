@@ -47,6 +47,7 @@ namespace CS_483_CSI_477.Pages
         private readonly PrerequisiteService _prereqService;
         private readonly PlannerCommandService _plannerCommands;
         private readonly GpaCalculatorService _gpaCalc;
+        private readonly AccountHoldService _holdService;
 
         public ChatModel(
             DatabaseHelper dbHelper,
@@ -60,7 +61,8 @@ namespace CS_483_CSI_477.Pages
             IConfiguration configuration,
             PrerequisiteService prereqService,
             PlannerCommandService plannerCommands,
-            GpaCalculatorService gpaCalc)
+            GpaCalculatorService gpaCalc,
+            AccountHoldService holdService)
         {
             _dbHelper = dbHelper;
             _chatLogStore = chatLogStore;
@@ -74,6 +76,7 @@ namespace CS_483_CSI_477.Pages
             _prereqService = prereqService;
             _plannerCommands = plannerCommands;
             _gpaCalc = gpaCalc;
+            _holdService = holdService;
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -502,6 +505,7 @@ namespace CS_483_CSI_477.Pages
 
             var fullName = row["FullName"]?.ToString() ?? "Student";
             var major = row["Major"]?.ToString() ?? "Undeclared";
+            HttpContext.Session.SetString("StudentMajor", major);
             var gpa = row["CurrentGPA"]?.ToString() ?? "0";
             var earned = row["TotalCreditsEarned"]?.ToString() ?? "0";
             var required = row["TotalCreditsRequired"]?.ToString() ?? "120";
@@ -540,6 +544,15 @@ namespace CS_483_CSI_477.Pages
             sb.AppendLine($"Current GPA: {gpa}");
             sb.AppendLine($"Credits Earned: {earned} / {required}");
             sb.AppendLine($"Degree Code: {degreeCode}");
+
+            var currentMonth = DateTime.Now.Month;
+            var currentSemester = currentMonth >= 8 ? "Fall" : currentMonth >= 5 ? "Summer" : "Spring";
+            var currentYear = DateTime.Now.Year;
+            var nextSemester = currentSemester == "Fall" ? $"Spring {currentYear + 1}" :
+                               currentSemester == "Spring" ? $"Fall {currentYear}" :
+                               $"Fall {currentYear}";
+            sb.AppendLine($"Current Semester: {currentSemester} {currentYear}");
+            sb.AppendLine($"Next Semester: {nextSemester}");
             sb.AppendLine();
             sb.AppendLine("Completed and In-Progress Courses:");
             if (completed != null && completed.Rows.Count > 0)
@@ -558,31 +571,31 @@ namespace CS_483_CSI_477.Pages
             sb.AppendLine("Core 39 General Education Progress:");
 
             var core39Sql = @"
-    SELECT 
-        c39.CategoryName,
-        c39.CreditsRequired,
-        COALESCE(SUM(c.CreditHours), 0) as CreditsEarned
-    FROM Core39Requirements c39
-    LEFT JOIN Courses c ON (
-        (c39.CategoryCode IS NOT NULL AND c.CourseCode IN (
-            SELECT TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(c39.Description, ',', numbers.n), ',', -1))
-            FROM (SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) numbers
-            WHERE CHAR_LENGTH(c39.Description) - CHAR_LENGTH(REPLACE(c39.Description, ',', '')) >= numbers.n - 1
-        ))
-        OR c39.CategoryCode IS NULL
-    )
-    LEFT JOIN StudentCourseHistory sch ON c.CourseID = sch.CourseID 
-        AND sch.StudentID = @studentId 
-        AND sch.Status = 'Completed'
-    WHERE c39.IsActive = 1 
-        AND c39.Core39ID BETWEEN 22 AND 33
-    GROUP BY c39.CategoryName, c39.CreditsRequired
-    ORDER BY c39.Core39ID";
+                SELECT 
+                    c39.CategoryName,
+                    c39.CreditsRequired,
+                    COALESCE(SUM(c.CreditHours), 0) as CreditsEarned
+                FROM Core39Requirements c39
+                LEFT JOIN Courses c ON (
+                    (c39.CategoryCode IS NOT NULL AND c.CourseCode IN (
+                        SELECT TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(c39.Description, ',', numbers.n), ',', -1))
+                        FROM (SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5) numbers
+                        WHERE CHAR_LENGTH(c39.Description) - CHAR_LENGTH(REPLACE(c39.Description, ',', '')) >= numbers.n - 1
+                    ))
+                    OR c39.CategoryCode IS NULL
+                )
+                LEFT JOIN StudentCourseHistory sch ON c.CourseID = sch.CourseID 
+                    AND sch.StudentID = @studentId 
+                    AND sch.Status = 'Completed'
+                WHERE c39.IsActive = 1 
+                    AND c39.Core39ID BETWEEN 22 AND 33
+                GROUP BY c39.CategoryName, c39.CreditsRequired
+                ORDER BY c39.Core39ID";
 
             var core39 = _dbHelper.ExecuteQuery(core39Sql, new[]
             {
-    new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = studentId }
-}, out var c39err);
+                new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = studentId }
+            }, out var c39err);
 
             if (core39 != null && core39.Rows.Count > 0)
             {
@@ -608,7 +621,16 @@ namespace CS_483_CSI_477.Pages
             sb.AppendLine($"- Total Quality Points: {gpaCalc.CumulativePoints}");
             sb.AppendLine($"- Courses included in GPA: {gpaCalc.Courses.Count}");
 
-            sb.AppendLine("=== END STUDENT DB CONTEXT ===");
+
+            // Add hold information BEFORE closing the context
+            var holdMessage = _holdService.GetActiveHoldsMessage(studentId);
+            if (!string.IsNullOrEmpty(holdMessage))
+            {
+                sb.AppendLine();
+                sb.AppendLine(holdMessage);
+            }
+
+            sb.AppendLine("=== END STUDENT DB CONTEXT ===");  // Move this to AFTER holds
 
             return Task.FromResult(sb.ToString());
         }
@@ -744,7 +766,9 @@ namespace CS_483_CSI_477.Pages
 
             if (looksPlanning)
             {
-                var rec = _catalogService.RecommendNextCourses(plan, completedSet, count: 6);
+                var studentMajor = HttpContext.Session.GetString("StudentMajor") ?? "";
+                var majorDepts = BulletinCourseParser.GetDepartmentsForMajor(studentMajor);
+                var rec = _catalogService.RecommendNextCourses(plan, completedSet, count: 6, allowedDepts: majorDepts);
 
                 if (rec.Count == 0)
                 {
@@ -871,15 +895,21 @@ namespace CS_483_CSI_477.Pages
 
                 STRICT RULES:
                 - You may ONLY recommend courses listed in PROVIDED RECOMMENDED COURSES below.
+                - Do NOT recommend courses from other majors (e.g., don't recommend Nursing courses to CS majors).
+                - ONLY recommend courses relevant to the student's major, minor, or Core 39 requirements.
+                - Recommend 12-15 credits per semester UNLESS the student has fewer credits remaining to graduate.
+                - If student needs less than 12 credits to graduate, recommend only the remaining courses.
+                - If the student context contains ACCOUNT HOLDS, you MUST lead your response with the hold warning BEFORE any course recommendations.
+                - Tell the student they cannot register until holds are resolved and to contact their advisor.
+                - Check TypicalTermsOffered for each course. Do NOT recommend a course for Fall if it is only offered in Spring, and vice versa. If term data is unavailable, you may recommend it but note the student should verify availability.
                 - Do NOT invent course codes, names, or credits.
                 - Keep it SHORT.
                 - Do NOT repeat the full Student DB Context.
-                - If asked for a course number, give 3–5 course codes.
 
                 Output format:
                 ## Answer
                 ## Recommended Next Courses
-                ## Suggested Schedule (12–15 credits)
+                ## Suggested Schedule (adjust credits based on remaining requirements)
                 ## Notes
                 ".Trim());
 
@@ -887,6 +917,25 @@ namespace CS_483_CSI_477.Pages
             sb.AppendLine("Student Snapshot:");
             sb.AppendLine(snap);
             sb.AppendLine();
+
+            // Calculate remaining credits
+            if (studentContext.Contains("Credits Earned:"))
+            {
+                var creditsLine = studentContext.Split('\n').FirstOrDefault(l => l.Contains("Credits Earned:"));
+                if (creditsLine != null)
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(creditsLine, @"(\d+)\s*/\s*(\d+)");
+                    if (match.Success)
+                    {
+                        var earned = int.Parse(match.Groups[1].Value);
+                        var required = int.Parse(match.Groups[2].Value);
+                        var remaining = required - earned;
+                        sb.AppendLine($"Credits Remaining to Graduate: {remaining}");
+                        sb.AppendLine($"Recommended Credit Load: {(remaining < 12 ? remaining : "12-15")} credits per semester");
+                        sb.AppendLine();
+                    }
+                }
+            }
 
             // Add Core 39 and completed courses context
             if (studentContext.Contains("Core 39 General Education Progress:"))

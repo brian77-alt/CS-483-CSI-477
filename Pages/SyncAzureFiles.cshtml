@@ -1,0 +1,32 @@
+﻿@page
+@model SyncAzureFilesModel
+@{
+    ViewData["Title"] = "Sync Azure Files";
+}
+
+<div class="container mt-4">
+    <h2>Sync Azure Files to Database</h2>
+    <p>This will scan Azure blob containers and create database entries for all uploaded files.</p>
+
+    <form method="post">
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-cloud-download"></i> Sync All Files
+        </button>
+    </form>
+
+    @if (Model.Results.Count > 0)
+    {
+        <div class="card mt-4">
+            <div class="card-header bg-success text-white">
+                <h5>Sync Results</h5>
+                <p class="mb-0">Bulletins: @Model.BulletinsAdded | Minors: @Model.MinorsAdded | Certificates: @Model.CertificatesAdded</p>
+            </div>
+            <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                @foreach (var result in Model.Results)
+                {
+                    <p class="mb-1">@result</p>
+                }
+            </div>
+        </div>
+    }
+</div>

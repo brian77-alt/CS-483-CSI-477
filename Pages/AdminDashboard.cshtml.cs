@@ -265,7 +265,7 @@ public class AdminDashboardModel : PageModel
             string fileUrl;
 
             if (string.IsNullOrEmpty(azureConnStr) ||
-                azureConnStr == "PASTSE_HERE_KEY")
+                azureConnStr == "PASTE_KEY_HERE")
             {
                 fileUrl = await SaveLocalAsync(file, "documents", DocType.ToLower());
             }

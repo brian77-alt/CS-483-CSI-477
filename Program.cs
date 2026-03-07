@@ -28,6 +28,8 @@ builder.Services.AddSingleton<PlannerCommandService>();
 builder.Services.AddSingleton <ConflictDetectionService>();
 builder.Services.AddSingleton<AuthenticationService>();
 builder.Services.AddSingleton<EmailService>();
+builder.Services.AddSingleton<AccountHoldService>();
+builder.Services.AddSingleton<BulletinCourseParser>();
 
 builder.Services.AddHttpClient<GeminiService>(client =>
 {

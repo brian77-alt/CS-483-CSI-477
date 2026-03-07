@@ -56,7 +56,7 @@ namespace CS_483_CSI_477.Services
                     temperature = 0.2,
                     topP = 0.9,
                     topK = 40,
-                    maxOutputTokens = 1600
+                    maxOutputTokens = 8192
                 }
             };
 
@@ -75,7 +75,7 @@ namespace CS_483_CSI_477.Services
             return ExtractText(respJson);
         }
 
-        private static string ExtractText(string responseJson)
+        private string ExtractText(string responseJson)
         {
             using var doc = JsonDocument.Parse(responseJson);
             var root = doc.RootElement;
@@ -94,6 +94,15 @@ namespace CS_483_CSI_477.Services
                 if (part.TryGetProperty("text", out var t))
                     sb.Append(t.GetString());
             }
+
+            // Log finish reason
+            try
+            {
+                if (root.TryGetProperty("candidates", out var cands2) && cands2.GetArrayLength() > 0)
+                    if (cands2[0].TryGetProperty("finishReason", out var reason))
+                        _logger.LogInformation($"Gemini finishReason: {reason.GetString()}");
+            }
+            catch { }
 
             var final = sb.ToString().Trim();
             return string.IsNullOrWhiteSpace(final) ? "No response generated." : final;

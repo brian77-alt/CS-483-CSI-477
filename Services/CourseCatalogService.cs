@@ -102,32 +102,27 @@ namespace CS_483_CSI_477.Services
         }
 
         public List<CatalogCourse> RecommendNextCourses(
-            DegreePlanParseResult plan,
-            HashSet<string> completed,
-            int count = 5)
+       DegreePlanParseResult plan,
+       HashSet<string> completed,
+       int count = 6,
+       List<string>? allowedDepts = null)
         {
-            string norm(string s) => Regex.Replace((s ?? "").ToUpperInvariant(), @"\s+", " ").Trim();
-
-            // Prefer remaining REQUIRED first
-            var remainingRequired = plan.Required
-                .Where(c => !completed.Contains(norm(c.Code)))
-                .OrderBy(c => c.Number)
+            var candidates = plan.Required
+                .Concat(plan.Electives)
+                .Where(c => !completed.Contains(c.Code))
                 .ToList();
 
-            if (remainingRequired.Count >= count)
-                return remainingRequired.Take(count).ToList();
+            if (allowedDepts != null && allowedDepts.Count > 0)
+            {
+                var filtered = candidates.Where(c =>
+                    allowedDepts.Any(d => c.Code.StartsWith(d, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
 
-            // If not enough required, add electives too
-            var remainingElectives = plan.Electives
-                .Where(c => !completed.Contains(norm(c.Code)))
-                .OrderBy(c => c.Code)
-                .ToList();
+                if (filtered.Count > 0)
+                    candidates = filtered;
+            }
 
-            var combined = new List<CatalogCourse>();
-            combined.AddRange(remainingRequired);
-            combined.AddRange(remainingElectives);
-
-            return combined.Take(count).ToList();
+            return candidates.Take(count).ToList();
         }
 
         public static HashSet<string> ExtractCompletedCourseCodes(string studentContext)
