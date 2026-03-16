@@ -455,12 +455,13 @@ namespace CS_483_CSI_477.Pages
                     c.CourseName,
                     c.CreditHours,
                     c.TypicalTermsOffered,
+                    sch.Status,
                     sch.Term AS PlannedTerm,
                     sch.AcademicYear AS PlannedYear
                 FROM StudentCourseHistory sch
                 JOIN Courses c ON sch.CourseID = c.CourseID
                 WHERE sch.StudentID = @sid
-                  AND sch.Status = 'Completed';";
+                AND sch.Status IN ('Completed', 'In Progress');";
 
             var historyResult = _dbHelper.ExecuteQuery(completedHistoryQuery, new[]
             {
@@ -481,6 +482,7 @@ namespace CS_483_CSI_477.Pages
                     bool alreadyExists = semester.Courses.Any(c => c.CourseID == courseId);
                     if (alreadyExists) continue;
 
+                    string status = row["Status"]?.ToString() ?? "Completed";
                     semester.Courses.Add(new PlannedCourse
                     {
                         PlannedCourseID = 0,
@@ -489,7 +491,7 @@ namespace CS_483_CSI_477.Pages
                         CourseName = row["CourseName"]?.ToString() ?? "",
                         CreditHours = Convert.ToInt32(row["CreditHours"]),
                         TermsOffered = row["TypicalTermsOffered"]?.ToString() ?? "",
-                        IsCompleted = true
+                        IsCompleted = status == "Completed"
                     });
                 }
             }
