@@ -23,7 +23,11 @@ namespace CS_483_CSI_477.Services
         }
 
         public async Task<string> GenerateWithHistoryAsync(
+<<<<<<< HEAD
          List<ChatMessage> conversationHistory, string currentPrompt)
+=======
+            List<ChatMessage> conversationHistory, string currentPrompt)
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
         {
             var apiKey = _config["Gemini:ApiKey"];
             var model = _config["Gemini:Model"] ?? "gemini-2.5-flash";
@@ -34,6 +38,10 @@ namespace CS_483_CSI_477.Services
             if (string.IsNullOrWhiteSpace(apiKey))
                 throw new InvalidOperationException("Gemini API key not configured.");
 
+<<<<<<< HEAD
+=======
+            // Cache key based on prompt hash (skip caching for personalized responses)
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             var isGenericQuestion = IsGenericQuestion(currentPrompt);
             if (isGenericQuestion)
             {
@@ -45,17 +53,28 @@ namespace CS_483_CSI_477.Services
                 }
             }
 
+<<<<<<< HEAD
             // keep more recent turns than before
             var recentHistory = conversationHistory.TakeLast(14).ToList();
 
             var contents = new List<object>();
 
+=======
+            // Only keep last 10 messages to reduce token count and improve speed
+            var recentHistory = conversationHistory.TakeLast(10).ToList();
+
+            var contents = new List<object>();
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             foreach (var msg in recentHistory)
             {
                 contents.Add(new
                 {
                     role = msg.Role == "assistant" ? "model" : "user",
+<<<<<<< HEAD
                     parts = new object[] { new { text = TruncateMessage(msg.Content, 800) } }
+=======
+                    parts = new object[] { new { text = TruncateMessage(msg.Content, 500) } }
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 });
             }
 
@@ -70,7 +89,11 @@ namespace CS_483_CSI_477.Services
                 contents,
                 generationConfig = new
                 {
+<<<<<<< HEAD
                     temperature = 0.15,
+=======
+                    temperature = 0.2,
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     topP = 0.9,
                     topK = 40,
                     maxOutputTokens = 4096,
@@ -90,11 +113,15 @@ namespace CS_483_CSI_477.Services
                 if (resp.StatusCode == System.Net.HttpStatusCode.TooManyRequests && model != fallbackModel)
                 {
                     _logger.LogWarning("Rate limited on {Model}, falling back to {Fallback}", model, fallbackModel);
+<<<<<<< HEAD
 
+=======
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     var fallbackUrl = $"{apiBase}/models/{fallbackModel}:generateContent?key={apiKey}";
                     using var fallbackContent = new StringContent(json, Encoding.UTF8, "application/json");
                     var fallbackResp = await _http.PostAsync(fallbackUrl, fallbackContent);
                     var fallbackRespJson = await fallbackResp.Content.ReadAsStringAsync();
+<<<<<<< HEAD
 
                     if (fallbackResp.IsSuccessStatusCode)
                     {
@@ -118,6 +145,28 @@ namespace CS_483_CSI_477.Services
                 if (resp.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
                     return "The AI advisor is temporarily unavailable due to high usage. Please try again in a few minutes.";
+=======
+                    if (fallbackResp.IsSuccessStatusCode)
+                    {
+                        _logger.LogInformation("Fallback to {Fallback} succeeded", fallbackModel);
+                        return ExtractText(fallbackRespJson);
+                    }
+
+                    // Both models rate limited
+                    if (fallbackResp.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                    {
+                        _logger.LogWarning("Both primary and fallback models are rate limited");
+                        return "The AI advisor is temporarily unavailable due to high usage. Please try again in a few minutes. If this persists, the daily request limit may have been reached — try again tomorrow or contact your administrator.";
+                    }
+
+                    _logger.LogError("Fallback also failed: {Body}", fallbackRespJson);
+                }
+
+                // Primary rate limited with no fallback difference
+                if (resp.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                {
+                    return "The AI advisor is temporarily unavailable due to high usage. Please try again in a few minutes. If this persists, the daily request limit may have been reached — try again tomorrow or contact your administrator.";
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 }
 
                 _logger.LogError("Gemini error {Status} Body: {Body}", resp.StatusCode, respJson);
@@ -126,6 +175,10 @@ namespace CS_483_CSI_477.Services
 
             var result = ExtractText(respJson);
 
+<<<<<<< HEAD
+=======
+            // Cache generic responses for 10 minutes
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             if (isGenericQuestion && !string.IsNullOrEmpty(result))
             {
                 var cacheKey = "gemini_" + GetHash(currentPrompt);

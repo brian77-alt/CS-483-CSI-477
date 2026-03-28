@@ -4,6 +4,7 @@
     ViewData["Title"] = "Advisor Chat";
 }
 
+<<<<<<< HEAD
 <div class="fade-in-up">
     <div class="row g-3">
         <!-- Sidebar -->
@@ -201,10 +202,144 @@
             </div>
         </div>
     </div>
+=======
+<div class="fade-in-up" style="max-width:860px; margin:0 auto;">
+
+    <!-- Header -->
+    <div class="section-header mb-3">
+        <h5>
+            <span class="section-icon"><i class="bi bi-robot" aria-hidden="true"></i></span>
+            AI Academic Advisor
+        </h5>
+        <div class="d-flex gap-2">
+            <form method="post" asp-page-handler="RemovePdf" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-secondary"
+                        aria-label="Remove uploaded PDF"
+                        @(string.IsNullOrEmpty(Model.PdfFileName) ? "disabled" : "")>
+                    <i class="bi bi-file-earmark-x me-1" aria-hidden="true"></i>Remove PDF
+                </button>
+            </form>
+            <form method="post" asp-page-handler="Clear" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-secondary"
+                        aria-label="Clear chat history"
+                        @(Model.Messages.Count == 0 ? "disabled" : "")>
+                    <i class="bi bi-trash me-1" aria-hidden="true"></i>Clear Chat
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+            @Model.ErrorMessage
+        </div>
+    }
+
+    @if (string.IsNullOrEmpty(Model.LoadedStudentSummary))
+    {
+        <div class="alert alert-warning mb-3" role="alert">
+            <i class="bi bi-person-x-fill" aria-hidden="true"></i>
+            Student data not loaded. Please ensure you are logged in with a valid student account.
+        </div>
+    }
+
+    <!-- Chat Window -->
+    <div class="card" style="border-radius:16px 16px 0 0 !important;">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <span>
+                <i class="bi bi-chat-dots-fill me-2" aria-hidden="true"></i>Conversation
+            </span>
+            @if (!string.IsNullOrEmpty(Model.LoadedStudentSummary))
+            {
+                <span class="badge" style="background:rgba(255,255,255,0.2); font-size:0.7rem; font-weight:500;">
+                    <i class="bi bi-person-check me-1" aria-hidden="true"></i>Student loaded
+                </span>
+            }
+        </div>
+
+        <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-label="Chat messages">
+            @if (Model.Messages.Count == 0)
+            {
+                <div class="text-center py-5" style="color:var(--slate-500);">
+                    <div style="width:64px; height:64px; background:var(--gold-pale); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:1.5rem; color:var(--gold);">
+                        <i class="bi bi-chat-dots" aria-hidden="true"></i>
+                    </div>
+                    <p class="fw-600 mb-1" style="color:var(--navy); font-weight:600;">Start a conversation</p>
+                    <p class="small mb-0">Ask about courses, degree requirements, or academic planning.</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var message in Model.Messages)
+                {
+                    <div class="message @message.Role" role="article" aria-label="@(message.Role == "user" ? "You" : "Advisor") at @message.Timestamp.ToString("h:mm tt")">
+                        <div class="msg-avatar" aria-hidden="true">
+                            @if (message.Role == "user")
+                            {
+                                <i class="bi bi-person-fill"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-robot"></i>
+                            }
+                        </div>
+                        <div>
+                            <div class="msg-bubble" style="white-space:pre-wrap;">@message.Content</div>
+                            <div class="msg-time">@message.Timestamp.ToString("h:mm tt")</div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- Input Area -->
+        <form method="post" enctype="multipart/form-data" data-ai-form class="chat-input-area" id="chatForm">
+            <div class="mb-2">
+                <label for="UploadedPdf" class="form-label" style="font-size:0.75rem; margin-bottom:0.3rem;">
+                    <i class="bi bi-paperclip me-1" aria-hidden="true"></i>Attach Academic Plan (PDF, optional)
+                </label>
+                <input type="file" asp-for="UploadedPdf" id="UploadedPdf" class="form-control form-control-sm" accept=".pdf"
+                       aria-describedby="pdfHelp" />
+                @if (!string.IsNullOrEmpty(Model.PdfFileName))
+                {
+                    <div id="pdfHelp" class="small mt-1" style="color:var(--success);">
+                        <i class="bi bi-file-earmark-check me-1" aria-hidden="true"></i>
+                        <strong>@Model.PdfFileName</strong> attached
+                    </div>
+                }
+            </div>
+            <div class="d-flex gap-0">
+                <input type="text"
+                       asp-for="UserMessage"
+                       id="userMessageInput"
+                       class="form-control"
+                       placeholder="Ask about courses, requirements, or planning…"
+                       autocomplete="off"
+                       style="border-radius:10px 0 0 10px; border-right:none;"
+                       aria-label="Type your message" />
+                <button type="submit" id="sendBtn" class="chat-send-btn" aria-label="Send message" disabled>
+                    <i class="bi bi-send-fill" aria-hidden="true"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between mt-2 px-1">
+        <small style="color:var(--slate-500); font-size:0.75rem;">
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+            AI-generated responses. Always verify with official academic sources.
+        </small>
+    </div>
+
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
 </div>
 
 @section Scripts {
     <script>
+<<<<<<< HEAD
         var chatMessages = document.getElementById('chatMessages');
         if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
 
@@ -215,16 +350,36 @@
             if (userInput && sendBtn) {
                 sendBtn.disabled = !userInput.value.trim();
             }
+=======
+        // Scroll to bottom of chat
+        var chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Send button enable/disable based on input
+        var userInput = document.getElementById('userMessageInput');
+        var sendBtn   = document.getElementById('sendBtn');
+
+        function updateSendBtn() {
+            if (userInput && sendBtn)
+                sendBtn.disabled = !userInput.value.trim();
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
         }
 
         if (userInput) {
             userInput.addEventListener('input', updateSendBtn);
+<<<<<<< HEAD
             window.addEventListener('load', function () {
+=======
+            // Clear input on load and focus
+            window.addEventListener('load', function () {
+                userInput.value = '';
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 userInput.focus();
                 updateSendBtn();
             });
         }
 
+<<<<<<< HEAD
         var chatForm = document.getElementById('chatForm');
         if (chatForm) {
             chatForm.addEventListener('submit', function (e) {
@@ -234,6 +389,14 @@
                 }
                 sendBtn.disabled = true;
                 sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>';
+=======
+        // Show loading on submit
+        var chatForm = document.getElementById('chatForm');
+        if (chatForm) {
+            chatForm.addEventListener('submit', function (e) {
+                if (!userInput || !userInput.value.trim()) { e.preventDefault(); return; }
+                window.showAiLoading();
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             });
         }
     </script>

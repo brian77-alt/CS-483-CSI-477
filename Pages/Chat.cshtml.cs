@@ -28,6 +28,7 @@ namespace CS_483_CSI_477.Pages
         private readonly PdfRagService _ragService;
         private readonly SupportingDocsRagService _docsRagService;
         private readonly IConfiguration _configuration;
+<<<<<<< HEAD
         private readonly PrerequisiteService _prereqService;
         private readonly PlannerCommandService _plannerCommands;
         private readonly GpaCalculatorService _gpaCalc;
@@ -38,6 +39,11 @@ namespace CS_483_CSI_477.Pages
         public List<ChatThreadInfo> Chats { get; set; } = new();
         public string ChatId { get; set; } = "";
         public string? CurrentChatTitle { get; set; }
+=======
+
+        public List<ChatMessage> Messages { get; set; } = new();
+        public string ChatId { get; set; } = "";
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
 
         public string? ErrorMessage { get; set; }
         public string? PdfFileName { get; set; }
@@ -54,6 +60,13 @@ namespace CS_483_CSI_477.Pages
         private const string ALT_PDF_PAGES_JSON_KEY = "AltPdfPagesJson";
         private const string ALT_PDF_FILENAME_KEY = "AltPdfFileName";
         private const string ALT_BULLETIN_YEAR_KEY = "AltBulletinYear";
+<<<<<<< HEAD
+=======
+        private readonly PrerequisiteService _prereqService;
+        private readonly PlannerCommandService _plannerCommands;
+        private readonly GpaCalculatorService _gpaCalc;
+        private readonly AccountHoldService _holdService;
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
 
         public ChatModel(
             DatabaseHelper dbHelper,
@@ -68,8 +81,12 @@ namespace CS_483_CSI_477.Pages
             PrerequisiteService prereqService,
             PlannerCommandService plannerCommands,
             GpaCalculatorService gpaCalc,
+<<<<<<< HEAD
             AccountHoldService holdService,
             ChatMemoryService chatMemory)
+=======
+            AccountHoldService holdService)
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
         {
             _dbHelper = dbHelper;
             _chatLogStore = chatLogStore;
@@ -84,7 +101,10 @@ namespace CS_483_CSI_477.Pages
             _plannerCommands = plannerCommands;
             _gpaCalc = gpaCalc;
             _holdService = holdService;
+<<<<<<< HEAD
             _chatMemory = chatMemory;
+=======
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -94,17 +114,26 @@ namespace CS_483_CSI_477.Pages
             if (HttpContext.Session.GetString("Role") == "Admin")
                 return RedirectToPage("/AdminDashboard");
 
+<<<<<<< HEAD
             int studentId = HttpContext.Session.GetInt32("StudentID")!.Value;
 
             await EnsureChatIdAsync(studentId);
+=======
+            EnsureChatId();
+
+            // Auto load bulletin from Azure if not already loaded
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             await TryAutoLoadBulletinAsync();
 
             PdfFileName = HttpContext.Session.GetString(PDF_FILENAME_KEY);
             await EnsureStudentContextLoadedAsync();
 
             Messages = await _chatLogStore.LoadAsync(ChatId);
+<<<<<<< HEAD
             await LoadSidebarAsync(studentId);
 
+=======
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             return Page();
         }
 
@@ -115,16 +144,25 @@ namespace CS_483_CSI_477.Pages
             if (HttpContext.Session.GetString("Role") == "Admin")
                 return RedirectToPage("/AdminDashboard");
 
+<<<<<<< HEAD
             int studentId = HttpContext.Session.GetInt32("StudentID")!.Value;
 
             await EnsureChatIdAsync(studentId);
+=======
+            EnsureChatId();
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
 
             PdfFileName = HttpContext.Session.GetString(PDF_FILENAME_KEY);
             await EnsureStudentContextLoadedAsync();
             Messages = await _chatLogStore.LoadAsync(ChatId);
+<<<<<<< HEAD
             await LoadSidebarAsync(studentId);
 
             // PDF upload
+=======
+
+            // ----  PDF upload ----
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             if (UploadedPdf != null && UploadedPdf.Length > 0)
             {
                 var ext = Path.GetExtension(UploadedPdf.FileName).ToLowerInvariant();
@@ -153,19 +191,35 @@ namespace CS_483_CSI_477.Pages
 
                     HttpContext.Session.SetString(PDF_PAGES_JSON_KEY, JsonSerializer.Serialize(extract.Pages));
 
+<<<<<<< HEAD
                     var bulletinYear = ExtractBulletinYear(UploadedPdf.FileName);
                     HttpContext.Session.SetString(BULLETIN_YEAR_KEY, bulletinYear);
 
                     var plan = _catalogService.ParseDegreePlanFromPdfPages(extract.Pages);
                     HttpContext.Session.SetString(CATALOG_JSON_KEY, JsonSerializer.Serialize(plan));
 
+=======
+                    // Extract bulletin year from filename
+                    var bulletinYear = ExtractBulletinYear(UploadedPdf.FileName);
+                    HttpContext.Session.SetString(BULLETIN_YEAR_KEY, bulletinYear);
+
+                    // Parse catalog from PDF and cache it
+                    var plan = _catalogService.ParseDegreePlanFromPdfPages(extract.Pages);
+                    HttpContext.Session.SetString(CATALOG_JSON_KEY, JsonSerializer.Serialize(plan));
+
+                    // Check for year mismatch warning
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     var yearWarning = CheckBulletinYearMismatch(bulletinYear);
 
                     Messages.Add(new ChatMessage
                     {
                         Role = "assistant",
                         Content =
+<<<<<<< HEAD
                             $"Loaded PDF: {UploadedPdf.FileName} (Bulletin Year: {bulletinYear}). " +
+=======
+                            $" Loaded PDF: {UploadedPdf.FileName} (Bulletin Year: {bulletinYear}). " +
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                             $"Extracted {extract.Pages.Count} page(s), {extract.TotalChars:N0} chars. " +
                             $"Parsed {plan.TotalCount} course item(s) (Required: {plan.Required.Count}, Electives: {plan.Electives.Count})." +
                             (string.IsNullOrEmpty(yearWarning) ? "" : $"\n\n⚠️ {yearWarning}"),
@@ -173,8 +227,11 @@ namespace CS_483_CSI_477.Pages
                     });
 
                     await _chatLogStore.SaveAsync(ChatId, Messages);
+<<<<<<< HEAD
                     await _chatMemory.UpdateSummaryAsync(studentId, ChatId, Messages, _chatLogStore);
                     await LoadSidebarAsync(studentId);
+=======
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 }
                 catch (Exception ex)
                 {
@@ -184,8 +241,15 @@ namespace CS_483_CSI_477.Pages
                 }
             }
 
+<<<<<<< HEAD
             UserMessage = InputSanitizer.SanitizeChat(UserMessage);
 
+=======
+            // Sanitize input
+            UserMessage = InputSanitizer.SanitizeChat(UserMessage);
+
+            // ----- Send Message -----
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             if (string.IsNullOrWhiteSpace(UserMessage))
             {
                 await _chatLogStore.SaveAsync(ChatId, Messages);
@@ -201,6 +265,10 @@ namespace CS_483_CSI_477.Pages
                 Timestamp = DateTime.Now
             });
 
+<<<<<<< HEAD
+=======
+            // Log chat usage
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             LogChatUsage();
 
             try
@@ -215,9 +283,12 @@ namespace CS_483_CSI_477.Pages
                 });
 
                 await _chatLogStore.SaveAsync(ChatId, Messages);
+<<<<<<< HEAD
                 await _chatMemory.UpdateSummaryAsync(studentId, ChatId, Messages, _chatLogStore);
                 await LoadSidebarAsync(studentId);
 
+=======
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 UserMessage = "";
             }
             catch (Exception ex)
@@ -233,8 +304,11 @@ namespace CS_483_CSI_477.Pages
                 });
 
                 await _chatLogStore.SaveAsync(ChatId, Messages);
+<<<<<<< HEAD
                 await _chatMemory.UpdateSummaryAsync(studentId, ChatId, Messages, _chatLogStore);
                 await LoadSidebarAsync(studentId);
+=======
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             }
 
             return Page();
@@ -242,6 +316,7 @@ namespace CS_483_CSI_477.Pages
 
         public async Task<IActionResult> OnPostClearAsync()
         {
+<<<<<<< HEAD
             var studentId = HttpContext.Session.GetInt32("StudentID");
             if (!studentId.HasValue)
                 return RedirectToPage("/Login");
@@ -249,6 +324,14 @@ namespace CS_483_CSI_477.Pages
             await EnsureChatIdAsync(studentId.Value);
             await _chatLogStore.ClearAsync(ChatId);
             await _chatMemory.UpdateSummaryAsync(studentId.Value, ChatId, new List<ChatMessage>(), _chatLogStore);
+=======
+            EnsureChatId();
+            await _chatLogStore.ClearAsync(ChatId);
+
+            // Clear chat session only — PDF stays loaded
+            HttpContext.Session.Remove("ChatId");
+            HttpContext.Session.Remove(STUDENT_CONTEXT_KEY);
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
 
             return RedirectToPage();
         }
@@ -265,6 +348,7 @@ namespace CS_483_CSI_477.Pages
             return RedirectToPage();
         }
 
+<<<<<<< HEAD
         public async Task<IActionResult> OnPostNewChatAsync()
         {
             var studentId = HttpContext.Session.GetInt32("StudentID");
@@ -361,6 +445,15 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
 " + memory;
         }
 
+=======
+        private void EnsureChatId()
+        {
+            ChatId = HttpContext.Session.GetString("ChatId") ?? Guid.NewGuid().ToString("N");
+            HttpContext.Session.SetString("ChatId", ChatId);
+        }
+
+        // Extract bulletin year from filename (e.g., "CS_Bulletin_2024-2025.pdf" → "2024-2025")
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
         private static string ExtractBulletinYear(string filename)
         {
             var match = Regex.Match(filename, @"(\d{4})-?(\d{4})", RegexOptions.IgnoreCase);
@@ -377,14 +470,23 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
             return "Unknown";
         }
 
+<<<<<<< HEAD
+=======
+        // Check if student is using the correct bulletin year
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
         private string CheckBulletinYearMismatch(string bulletinYear)
         {
             var sid = HttpContext.Session.GetInt32("StudentID");
             if (!sid.HasValue || bulletinYear == "Unknown") return "";
 
             var query = @"
+<<<<<<< HEAD
                 SELECT EnrollmentYear
                 FROM Students
+=======
+                SELECT EnrollmentYear 
+                FROM Students 
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 WHERE StudentID = @studentId";
 
             var result = _dbHelper.ExecuteQuery(query, new[]
@@ -403,19 +505,37 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
 
             if (bulletinStartYear < entryYear)
             {
+<<<<<<< HEAD
                 return $"You enrolled in {entryYear}, but this bulletin is from {bulletinYear}. You should normally follow the bulletin from your entry year ({entryYear}-{entryYear + 1}) unless advised otherwise.";
+=======
+                return $"WARNING: You enrolled in {entryYear}, but this bulletin is from {bulletinYear}. " +
+                       $"You should follow the bulletin from your entry year ({entryYear}-{entryYear + 1}) unless advised otherwise.";
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             }
 
             if (bulletinStartYear > entryYear + 1)
             {
+<<<<<<< HEAD
                 return $"This bulletin ({bulletinYear}) is newer than your entry year ({entryYear}). Check with your advisor before following newer requirements.";
+=======
+                return $"NOTE: This bulletin ({bulletinYear}) is newer than your entry year ({entryYear}). " +
+                       $"Consult your advisor before following newer requirements.";
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             }
 
             return "";
         }
 
+<<<<<<< HEAD
         private async Task<bool> TryAutoLoadBulletinAsync()
         {
+=======
+        // AUTO LOAD BULLETIN FROM AZURE
+        // ------------------------------
+        private async Task<bool> TryAutoLoadBulletinAsync()
+        {
+            // Check if bulletin already loaded
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             if (!string.IsNullOrEmpty(HttpContext.Session.GetString(PDF_FILENAME_KEY)))
                 return true;
 
@@ -444,11 +564,24 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
                 if (string.IsNullOrEmpty(degreeCode) || enrollmentYear == DBNull.Value)
                     return false;
 
+<<<<<<< HEAD
                 var currentMonth = DateTime.Now.Month;
                 var currentCalendarYear = DateTime.Now.Year;
                 string bulletinYearNeeded = currentMonth >= 8
                     ? $"{currentCalendarYear}-{currentCalendarYear + 1}"
                     : $"{currentCalendarYear - 1}-{currentCalendarYear}";
+=======
+                var entryYear = Convert.ToInt32(enrollmentYear);
+                // Determine which bulletin year to use based on current semester
+                // Spring semester (Jan-Jul) = current academic year, Fall (Aug-Dec) = next academic year
+                var currentMonth = DateTime.Now.Month;
+                var currentCalendarYear = DateTime.Now.Year;
+                string bulletinYearNeeded;
+                if (currentMonth >= 8)
+                    bulletinYearNeeded = $"{currentCalendarYear}-{currentCalendarYear + 1}";
+                else
+                    bulletinYearNeeded = $"{currentCalendarYear - 1}-{currentCalendarYear}";
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
 
                 string majorKeyword = degreeCode switch
                 {
@@ -464,7 +597,11 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
                     AND BulletinCategory = 'Major'
                     AND FileName LIKE @majorKeyword
                     AND FileName NOT LIKE '%Minor%'
+<<<<<<< HEAD
                     ORDER BY
+=======
+                    ORDER BY 
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                         CASE WHEN BulletinYear = @bulletinYear THEN 0 ELSE 1 END,
                         AcademicYear DESC
                     LIMIT 1";
@@ -477,7 +614,11 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
 
                 if (!string.IsNullOrEmpty(berr) || bulletin == null || bulletin.Rows.Count == 0)
                 {
+<<<<<<< HEAD
                     _logger.LogWarning("No bulletin found for {DegreeCode}, year {BulletinYearNeeded}", degreeCode, bulletinYearNeeded);
+=======
+                    _logger.LogWarning($"No bulletin found for {degreeCode}, year {bulletinYearNeeded}");
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     return false;
                 }
 
@@ -487,6 +628,10 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
                 var bulletinYear = bulletinRow["BulletinYear"].ToString() ?? "";
 
                 byte[]? pdfBytes = await DownloadPdfFromPathAsync(filePath);
+<<<<<<< HEAD
+=======
+
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 if (pdfBytes == null || pdfBytes.Length == 0)
                     return false;
 
@@ -500,7 +645,12 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
                 HttpContext.Session.SetString(CATALOG_JSON_KEY, JsonSerializer.Serialize(plan));
 
                 PdfFileName = fileName;
+<<<<<<< HEAD
                 _logger.LogInformation("Auto-loaded bulletin: {FileName} ({BulletinYear})", fileName, bulletinYear);
+=======
+
+                _logger.LogInformation($"Auto-loaded bulletin: {fileName} ({bulletinYear})");
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 return true;
             }
             catch (Exception ex)
@@ -512,24 +662,41 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
 
         private async Task<(List<PdfPageText> Pages, string FileName, string BulletinYear)> TryLoadBulletinForMajorAsync(string degreeCode)
         {
+<<<<<<< HEAD
+=======
+            // Check if already cached in alt session keys
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             var cachedJson = HttpContext.Session.GetString(ALT_PDF_PAGES_JSON_KEY);
             var cachedFileName = HttpContext.Session.GetString(ALT_PDF_FILENAME_KEY) ?? "";
             var cachedYear = HttpContext.Session.GetString(ALT_BULLETIN_YEAR_KEY) ?? "";
 
+<<<<<<< HEAD
             var expectedPhrase = degreeCode == "CIS-BS" ? "Computer Information" : "Computer Science";
             if (!string.IsNullOrEmpty(cachedJson) &&
                 cachedFileName.Contains(expectedPhrase, StringComparison.OrdinalIgnoreCase))
+=======
+            if (!string.IsNullOrEmpty(cachedJson) && cachedFileName.Contains(
+                degreeCode == "CIS-BS" ? "Computer Information" : "Computer Science",
+                StringComparison.OrdinalIgnoreCase))
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             {
                 try
                 {
                     var cachedPages = JsonSerializer.Deserialize<List<PdfPageText>>(cachedJson) ?? new();
                     return (cachedPages, cachedFileName, cachedYear);
                 }
+<<<<<<< HEAD
                 catch
                 {
                 }
             }
 
+=======
+                catch { }
+            }
+
+            // Determine bulletin year
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             var currentMonth = DateTime.Now.Month;
             var currentCalendarYear = DateTime.Now.Year;
             string bulletinYearNeeded = currentMonth >= 8
@@ -563,7 +730,11 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
 
             if (!string.IsNullOrEmpty(berr) || bulletin == null || bulletin.Rows.Count == 0)
             {
+<<<<<<< HEAD
                 _logger.LogWarning("No bulletin found for {DegreeCode}, year {BulletinYearNeeded}", degreeCode, bulletinYearNeeded);
+=======
+                _logger.LogWarning($"No bulletin found for {degreeCode}, year {bulletinYearNeeded}");
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 return (new List<PdfPageText>(), "", "");
             }
 
@@ -578,11 +749,19 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
 
             var extract = _pdfService.Extract(pdfBytes, fileName, maxPages: 25, maxCharsTotal: 200_000);
 
+<<<<<<< HEAD
+=======
+            // Cache in alt session keys so next question about this major is instant
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             HttpContext.Session.SetString(ALT_PDF_PAGES_JSON_KEY, JsonSerializer.Serialize(extract.Pages));
             HttpContext.Session.SetString(ALT_PDF_FILENAME_KEY, fileName);
             HttpContext.Session.SetString(ALT_BULLETIN_YEAR_KEY, yearStr);
 
+<<<<<<< HEAD
             _logger.LogInformation("On-demand loaded bulletin: {FileName} ({YearStr})", fileName, yearStr);
+=======
+            _logger.LogInformation($"On-demand loaded bulletin: {fileName} ({yearStr})");
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             return (extract.Pages, fileName, yearStr);
         }
 
@@ -590,7 +769,11 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
         {
             try
             {
+<<<<<<< HEAD
                 if (filePath.StartsWith("/uploads", StringComparison.OrdinalIgnoreCase))
+=======
+                if (filePath.StartsWith("/uploads"))
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 {
                     var localPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", filePath.TrimStart('/'));
                     if (System.IO.File.Exists(localPath))
@@ -610,7 +793,11 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
 
                 if (pathParts.Length < 2)
                 {
+<<<<<<< HEAD
                     _logger.LogError("Invalid blob path: {FilePath}", filePath);
+=======
+                    _logger.LogError($"Invalid blob path: {filePath}");
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     return null;
                 }
 
@@ -627,13 +814,24 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
             }
             catch (Exception ex)
             {
+<<<<<<< HEAD
                 _logger.LogError(ex, "Failed to download PDF from {FilePath}", filePath);
+=======
+                _logger.LogError(ex, $"Failed to download PDF from {filePath}");
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 return null;
             }
         }
 
+<<<<<<< HEAD
         private async Task EnsureStudentContextLoadedAsync()
         {
+=======
+        // DB CONTEXT
+        private async Task EnsureStudentContextLoadedAsync()
+        {
+            // Always refresh context so planner changes are reflected
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             LoadedStudentSummary = null;
             HttpContext.Session.Remove(STUDENT_CONTEXT_KEY);
 
@@ -650,7 +848,11 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
             var sb = new StringBuilder();
 
             var summarySql = @"
+<<<<<<< HEAD
                 SELECT
+=======
+                SELECT 
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     CONCAT(s.FirstName, ' ', s.LastName) as FullName,
                     s.StudentID,
                     s.Major,
@@ -663,8 +865,13 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
                 FROM Students s
                 LEFT JOIN DegreePrograms dp ON s.Major = dp.DegreeName
                 WHERE s.StudentID = @studentId
+<<<<<<< HEAD
                 LIMIT 1;";
 
+=======
+                LIMIT 1;
+                ";
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             var summary = _dbHelper.ExecuteQuery(summarySql, new[]
             {
                 new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = studentId }
@@ -686,7 +893,11 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
             var enrollmentYear = row["EnrollmentYear"] != DBNull.Value ? row["EnrollmentYear"].ToString() : "N/A";
 
             var completedSql = @"
+<<<<<<< HEAD
                 SELECT
+=======
+                SELECT 
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     c.CourseCode,
                     c.CourseName,
                     c.CreditHours,
@@ -698,8 +909,13 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
                 JOIN Courses c ON sch.CourseID = c.CourseID
                 WHERE sch.StudentID = @studentId
                 AND sch.Status IN ('Completed', 'In Progress')
+<<<<<<< HEAD
                 ORDER BY sch.Status DESC, sch.AcademicYear DESC, sch.Term DESC;";
 
+=======
+                ORDER BY sch.Status DESC, sch.AcademicYear DESC, sch.Term DESC;
+                ";
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             var completed = _dbHelper.ExecuteQuery(completedSql, new[]
             {
                 new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = studentId }
@@ -720,17 +936,26 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
             var currentMonth = DateTime.Now.Month;
             var currentSemester = currentMonth >= 8 ? "Fall" : currentMonth >= 5 ? "Summer" : "Spring";
             var currentYear = DateTime.Now.Year;
+<<<<<<< HEAD
             var nextSemester = currentSemester == "Fall"
                 ? $"Spring {currentYear + 1}"
                 : currentSemester == "Spring"
                     ? $"Fall {currentYear}"
                     : $"Fall {currentYear}";
 
+=======
+            var nextSemester = currentSemester == "Fall" ? $"Spring {currentYear + 1}" :
+                               currentSemester == "Spring" ? $"Fall {currentYear}" :
+                               $"Fall {currentYear}";
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             sb.AppendLine($"Current Semester: {currentSemester} {currentYear}");
             sb.AppendLine($"Next Semester: {nextSemester}");
             sb.AppendLine();
             sb.AppendLine("Completed and In-Progress Courses:");
+<<<<<<< HEAD
 
+=======
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             if (completed != null && completed.Rows.Count > 0)
             {
                 foreach (DataRow r in completed.Rows)
@@ -740,16 +965,26 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
                     sb.AppendLine($"- {r["CourseCode"]}: {r["CourseName"]} ({r["CreditHours"]} hrs) Grade {r["Grade"]} — {r["Term"]} {r["AcademicYear"]}{statusTag}");
                 }
             }
+<<<<<<< HEAD
             else
             {
                 sb.AppendLine("- (none found)");
             }
 
+=======
+            else sb.AppendLine("- (none found)");
+
+            // Core 39 Progress
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             sb.AppendLine();
             sb.AppendLine("Core 39 General Education Progress:");
 
             var core39Sql = @"
+<<<<<<< HEAD
                 SELECT
+=======
+                SELECT 
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     c39.CategoryName,
                     c39.CreditsRequired,
                     COALESCE(SUM(c.CreditHours), 0) as CreditsEarned
@@ -762,10 +997,17 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
                     ))
                     OR c39.CategoryCode IS NULL
                 )
+<<<<<<< HEAD
                 LEFT JOIN StudentCourseHistory sch ON c.CourseID = sch.CourseID
                     AND sch.StudentID = @studentId
                     AND sch.Status = 'Completed'
                 WHERE c39.IsActive = 1
+=======
+                LEFT JOIN StudentCourseHistory sch ON c.CourseID = sch.CourseID 
+                    AND sch.StudentID = @studentId 
+                    AND sch.Status = 'Completed'
+                WHERE c39.IsActive = 1 
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     AND c39.Core39ID BETWEEN 22 AND 33
                 GROUP BY c39.CategoryName, c39.CreditsRequired
                 ORDER BY c39.Core39ID";
@@ -779,7 +1021,14 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
             {
                 foreach (DataRow r in core39.Rows)
                 {
+<<<<<<< HEAD
                     sb.AppendLine($"- {r["CategoryName"]}: {r["CreditsEarned"]}/{r["CreditsRequired"]} credits");
+=======
+                    var category = r["CategoryName"].ToString();
+                    var requiredCredits = r["CreditsRequired"].ToString();
+                    var earnedCredits = r["CreditsEarned"].ToString();
+                    sb.AppendLine($"- {category}: {earnedCredits}/{requiredCredits} credits");
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 }
             }
             else
@@ -788,12 +1037,21 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
             }
 
             sb.AppendLine();
+<<<<<<< HEAD
+=======
+
+            // GPA Calculation Details
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             var gpaCalc = _gpaCalc.CalculateCurrentGpa(studentId);
             sb.AppendLine("GPA Calculation Details:");
             sb.AppendLine($"- Current GPA: {gpaCalc.CurrentGpa} (calculated from {gpaCalc.CompletedCredits} completed credits)");
             sb.AppendLine($"- Total Quality Points: {gpaCalc.CumulativePoints}");
             sb.AppendLine($"- Courses included in GPA: {gpaCalc.Courses.Count}");
 
+<<<<<<< HEAD
+=======
+            // Add hold information BEFORE closing the context
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             var holdMessage = _holdService.GetActiveHoldsMessage(studentId);
             if (!string.IsNullOrEmpty(holdMessage))
             {
@@ -801,11 +1059,19 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
                 sb.AppendLine(holdMessage);
             }
 
+<<<<<<< HEAD
+=======
+            // Current Degree Plan
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             sb.AppendLine();
             sb.AppendLine("Current Degree Plan (PlannedCourses):");
 
             var plannedSql = @"
+<<<<<<< HEAD
                 SELECT
+=======
+                SELECT 
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     c.CourseCode,
                     c.CourseName,
                     c.CreditHours,
@@ -848,6 +1114,14 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
             return Task.FromResult(sb.ToString());
         }
 
+<<<<<<< HEAD
+=======
+        // ------------------------
+        // MAIN RESPONSE WITH RAG
+        // ------------------------
+
+        // PLANNER COMMAND PARSER
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
         private static bool TryParsePlannerCommand(
             string userMessage,
             out string action,
@@ -916,6 +1190,7 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
 
         private async Task<string> GetAdvisorResponseAsync(string userMessage)
         {
+<<<<<<< HEAD
             var sid = HttpContext.Session.GetInt32("StudentID");
 
             if (sid.HasValue)
@@ -928,12 +1203,32 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
                     out var term2,
                     out var year2))
                 {
+=======
+            // Handle planner commands FIRST
+            var sid = HttpContext.Session.GetInt32("StudentID");
+            if (sid.HasValue)
+            {
+                if (TryParsePlannerCommand(userMessage,
+                        out var action,
+                        out var code,
+                        out var term1,
+                        out var year1,
+                        out var term2,
+                        out var year2))
+                {
+                    // Validate term before executing add/move
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     if (action == "add" || action == "move")
                     {
                         var termToCheck = action == "move" ? term2 : term1;
                         var termValidationQuery = @"
+<<<<<<< HEAD
                             SELECT TypicalTermsOffered
                             FROM Courses
+=======
+                            SELECT TypicalTermsOffered 
+                            FROM Courses 
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                             WHERE CourseCode = @code AND IsActive = 1 LIMIT 1;";
 
                         var termResult = _dbHelper.ExecuteQuery(termValidationQuery, new[]
@@ -972,6 +1267,7 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
             var studentContext = HttpContext.Session.GetString(STUDENT_CONTEXT_KEY) ?? "(No student DB context loaded.)";
 
             bool wantsProfile =
+<<<<<<< HEAD
                 Regex.IsMatch(userMessage, @"\b(who am i|my profile|my gpa|my credits|my info|what is my gpa|how many credits do i have)\b", RegexOptions.IgnoreCase);
 
             if (wantsProfile)
@@ -1041,15 +1337,122 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
                 prompt = await AddConversationMemoryAsync(prompt, userMessage);
                 return await _gemini.GenerateWithHistoryAsync(Messages, prompt);
             }
+=======
+                Regex.IsMatch(userMessage, @"\b(who am i|show (my )?profile|my info)\b", RegexOptions.IgnoreCase);
+
+            if (wantsProfile)
+                return BuildProfileAnswer(studentContext);
+
+            var plan = LoadPlanFromSession();
+            var pdfPages = LoadPdfPagesFromSession();
+
+            if (plan.TotalCount == 0 && pdfPages.Count == 0)
+            {
+                return "I didn't find any course listings or bulletin content yet. Please upload the bulletin PDF (must be text-based, not scanned).";
+            }
+
+            var completedSet = ExtractCompletedCourseCodes(studentContext);
+
+            bool looksGraduation =
+            Regex.IsMatch(userMessage, @"\b(graduate|graduation|can i graduate|on track|finish|complete my degree|how many credits|credits left|credits remaining)\b",
+                RegexOptions.IgnoreCase);
+
+            if (looksGraduation)
+            {
+                var gradPrompt = BuildGraduationCheckPrompt(userMessage, studentContext, sid ?? 0);
+                return await _gemini.GenerateWithHistoryAsync(Messages, gradPrompt);
+            }
+
+            bool looksPlanning =
+                Regex.IsMatch(userMessage, @"\b(next classes|what classes|what should i take|recommend|next semester|schedule)\b",
+                    RegexOptions.IgnoreCase);
+
+            if (looksPlanning)
+            {
+                // Query DegreeRequirements directly — only courses actually required for this student's degree
+                var remainingCourses = GetRemainingRequiredCourses(sid ?? 0);
+
+                if (remainingCourses.Count == 0)
+                {
+                    return "Great news — it looks like you've completed all your required courses! Please consult your advisor to confirm graduation eligibility.";
+                }
+
+                // Convert to CatalogCourse list for existing prompt builder
+                var rec = remainingCourses.Select(r => new CatalogCourse
+                {
+                    Code = r.CourseCode,
+                    Title = r.CourseName,
+                    CreditsText = r.CreditHours.ToString(),
+                    Section = r.Category
+                }).Take(8).ToList();
+
+                var prompt = BuildPlanningPrompt(userMessage, studentContext, "Degree Requirements (DB)", rec, sid);
+                return await _gemini.GenerateWithHistoryAsync(Messages, prompt);
+            }
+
+            // Detect major switch questions — load the other major's bulletin on demand
+            bool looksMajorSwitch = Regex.IsMatch(userMessage,
+                @"\b(switch(ing)?|chang(e|ing)|transfer(ring)?|move|moving)\b.{0,40}\b(major|cis|cs|computer information|computer science)\b",
+                RegexOptions.IgnoreCase)
+                || Regex.IsMatch(userMessage,
+                @"\b(cis|computer information systems)\b.{0,40}\b(major|require|course|curriculum|degree)\b",
+                RegexOptions.IgnoreCase);
+
+            List<PdfPageText> ragPages = pdfPages;
+            string ragPdfName = PdfFileName ?? "Bulletin";
+            string ragYear = HttpContext.Session.GetString(BULLETIN_YEAR_KEY) ?? "Unknown";
+
+            if (looksMajorSwitch)
+            {
+                // Determine which major they're asking about
+                bool askingAboutCis = Regex.IsMatch(userMessage,
+                    @"\b(cis|computer information)\b", RegexOptions.IgnoreCase);
+
+                var studentMajor = HttpContext.Session.GetString("StudentMajor") ?? "";
+                bool studentIsCis = studentMajor.Contains("Information", StringComparison.OrdinalIgnoreCase);
+
+                // Load the other major's bulletin
+                string targetDegreeCode = (askingAboutCis && !studentIsCis) ? "CIS-BS" : "CS-BS";
+                var (altPages, altFileName, altYear) = await TryLoadBulletinForMajorAsync(targetDegreeCode);
+
+                if (altPages.Count > 0)
+                {
+                    ragPages = altPages;
+                    ragPdfName = altFileName;
+                    ragYear = altYear;
+                    _logger.LogInformation($"Major switch detected — using bulletin: {altFileName}");
+                }
+            }
+
+            // General question - use RAG to find relevant bulletin content
+            var ragHits = _ragService.FindTopRelevantSnippets(ragPages, userMessage, topK: 3, snippetMaxChars: 600);
+
+            var bulletinYear = ragYear;
+            var supportingDocs = await _docsRagService.SearchSupportingDocsAsync(
+                userMessage,
+                courseCode: null,
+                documentYear: bulletinYear,
+                maxDocuments: 3);
+
+            _logger.LogInformation("=== STUDENT CONTEXT CHECK ===");
+            _logger.LogInformation($"Contains 'Core 39': {studentContext.Contains("Core 39 General Education Progress:")}");
+            _logger.LogInformation($"Contains 'Completed': {studentContext.Contains("Completed and In-Progress Courses:")}");
+            _logger.LogInformation("=== END CHECK ===");
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
 
             var generalPrompt = BuildGeneralPromptWithRAG(
                 userMessage,
                 studentContext,
+<<<<<<< HEAD
                 catalogName,
+=======
+                ragPdfName,
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 plan,
                 ragHits,
                 supportingDocs);
 
+<<<<<<< HEAD
             generalPrompt = await AddConversationMemoryAsync(generalPrompt, userMessage);
             return await _gemini.GenerateWithHistoryAsync(Messages, generalPrompt);
         }
@@ -1173,11 +1576,152 @@ Output format:
                 if (!string.IsNullOrEmpty(core39Section))
                 {
                     sb.AppendLine("Core 39 Progress:");
+=======
+            _logger.LogInformation("=== PROMPT SENT TO AI ===");
+            _logger.LogInformation(generalPrompt);
+            _logger.LogInformation("=== END PROMPT ===");
+
+            var response = await _gemini.GenerateWithHistoryAsync(Messages, generalPrompt);
+
+            if (ragHits.Count > 0 || supportingDocs.Count > 0)
+            {
+                var citations = BuildCitationsWithDocs(ragHits, ragPdfName, ragYear, supportingDocs);
+                response += $"\n\n{citations}";
+            }
+
+            return response;
+        }
+
+        private static string BuildProfileAnswer(string studentContext)
+        {
+            return "## Answer\nHere's your profile from the database.\n\n" + studentContext;
+        }
+
+        private DegreePlanParseResult LoadPlanFromSession()
+        {
+            var json = HttpContext.Session.GetString(CATALOG_JSON_KEY);
+            if (string.IsNullOrWhiteSpace(json)) return new DegreePlanParseResult();
+            try
+            {
+                return JsonSerializer.Deserialize<DegreePlanParseResult>(json) ?? new DegreePlanParseResult();
+            }
+            catch
+            {
+                return new DegreePlanParseResult();
+            }
+        }
+
+        private List<PdfPageText> LoadPdfPagesFromSession()
+        {
+            var json = HttpContext.Session.GetString(PDF_PAGES_JSON_KEY);
+            if (string.IsNullOrWhiteSpace(json)) return new List<PdfPageText>();
+            try
+            {
+                return JsonSerializer.Deserialize<List<PdfPageText>>(json) ?? new List<PdfPageText>();
+            }
+            catch
+            {
+                return new List<PdfPageText>();
+            }
+        }
+
+        private static HashSet<string> ExtractCompletedCourseCodes(string studentContext)
+        {
+            var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var line in studentContext.Split('\n'))
+            {
+                var m = Regex.Match(line, @"-\s+([A-Z]{2,4})\s*(\d{3})\s*:", RegexOptions.IgnoreCase);
+                if (m.Success)
+                    set.Add($"{m.Groups[1].Value.ToUpperInvariant()} {m.Groups[2].Value}");
+            }
+            return set;
+        }
+
+        private static string BuildCitations(List<RagHit> hits, string pdfName, string bulletinYear)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("---");
+            sb.AppendLine("**Sources:**");
+
+            foreach (var hit in hits.OrderBy(h => h.Page))
+            {
+                sb.AppendLine($"- Page {hit.Page} of {pdfName} ({bulletinYear})");
+            }
+
+            return sb.ToString();
+        }
+
+        private string BuildPlanningPrompt(
+            string userQuestion,
+            string studentContext,
+            string catalogName,
+            List<CatalogCourse> recommended,
+            int? studentId)
+        {
+            var snap = ShortSnapshot(studentContext);
+
+            var sb = new StringBuilder();
+            sb.AppendLine(@"
+                You are an AI Academic Advisor.
+
+                STRICT RULES:
+                - You may ONLY recommend courses listed in PROVIDED RECOMMENDED COURSES below.
+                - Do NOT recommend courses from other majors (e.g., don't recommend Nursing courses to CS majors).
+                - ONLY recommend courses relevant to the student's major or Core 39 requirements. Do NOT recommend or invent minor requirements unless a minor is explicitly declared in the student's profile.
+                - Recommend 12-15 credits per semester UNLESS the student has fewer credits remaining to graduate.
+                - If student needs less than 12 credits to graduate, recommend only the remaining courses.
+                - If the student context contains ACCOUNT HOLDS, you MUST lead your response with the hold warning BEFORE any course recommendations.
+                - Tell the student they cannot register until holds are resolved and to contact their advisor.
+                - Check TypicalTermsOffered for each course. Do NOT recommend a course for Fall if it is only offered in Spring, and vice versa. If term data is unavailable, you may recommend it but note the student should verify availability.
+                - Do NOT invent course codes, names, or credits.
+                - Keep it SHORT.
+                - Do NOT repeat the full Student DB Context.
+
+                Output format:
+                ## Answer
+                ## Recommended Next Courses
+                ## Suggested Schedule (adjust credits based on remaining requirements)
+                ## Notes
+                ".Trim());
+
+            sb.AppendLine();
+            sb.AppendLine("Student Snapshot:");
+            sb.AppendLine(snap);
+            sb.AppendLine();
+
+            // Calculate remaining credits
+            if (studentContext.Contains("Credits Earned:"))
+            {
+                var creditsLine = studentContext.Split('\n').FirstOrDefault(l => l.Contains("Credits Earned:"));
+                if (creditsLine != null)
+                {
+                    var match = Regex.Match(creditsLine, @"(\d+)\s*/\s*(\d+)");
+                    if (match.Success)
+                    {
+                        var earnedCredits = int.Parse(match.Groups[1].Value);
+                        var requiredCredits = int.Parse(match.Groups[2].Value);
+                        var remaining = requiredCredits - earnedCredits;
+                        sb.AppendLine($"Credits Remaining to Graduate: {remaining}");
+                        sb.AppendLine($"Recommended Credit Load: {(remaining < 12 ? remaining : "12-15")} credits per semester");
+                        sb.AppendLine();
+                    }
+                }
+            }
+
+            // Add Core 39 context
+            if (studentContext.Contains("Core 39 General Education Progress:"))
+            {
+                var core39Section = ExtractSection(studentContext, "Core 39 General Education Progress:", "=== END");
+                if (!string.IsNullOrEmpty(core39Section))
+                {
+                    sb.AppendLine("Core 39 Requirements Status:");
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     sb.AppendLine(core39Section.Trim());
                     sb.AppendLine();
                 }
             }
 
+<<<<<<< HEAD
             var remaining = GetRemainingRequiredCourses(studentId);
             sb.AppendLine("Remaining Required Courses (not yet completed or in progress):");
             if (remaining.Count == 0)
@@ -1239,6 +1783,9 @@ Recommended format:
             sb.AppendLine(ShortSnapshot(studentContext));
             sb.AppendLine();
 
+=======
+            // Add completed courses context
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             if (studentContext.Contains("Completed and In-Progress Courses:"))
             {
                 var coursesSection = ExtractSection(studentContext, "Completed and In-Progress Courses:", "Core 39");
@@ -1250,6 +1797,7 @@ Recommended format:
                 }
             }
 
+<<<<<<< HEAD
             if (studentContext.Contains("Current Degree Plan"))
             {
                 var planSection = ExtractSection(studentContext, "Current Degree Plan (PlannedCourses):", "=== END");
@@ -1312,12 +1860,69 @@ Recommended format:
                 }
             }
 
+=======
+            sb.AppendLine();
+            sb.AppendLine($"Source: {catalogName}");
+            sb.AppendLine();
+
+            sb.AppendLine("PROVIDED RECOMMENDED COURSES (use ONLY these):");
+            var sid = HttpContext.Session.GetInt32("StudentID");
+            foreach (var c in recommended.Take(6))
+            {
+                var cr = !string.IsNullOrWhiteSpace(c.CreditsText) ? $" | Credits: {c.CreditsText}" : "";
+
+                string prereqInfo = "";
+                if (sid.HasValue)
+                {
+                    var prereqCheck = _prereqService.CheckPrerequisites(sid.Value, c.Code);
+                    if (prereqCheck.MissingPrerequisites.Count > 0)
+                    {
+                        prereqInfo = $" | ⚠️ Missing: {string.Join(", ", prereqCheck.MissingPrerequisites.Select(p => p.Split('-')[0].Trim()))}";
+                    }
+                    else
+                    {
+                        var prereqs = _prereqService.GetPrerequisitesDisplay(c.Code);
+                        if (prereqs != "None")
+                        {
+                            prereqInfo = $" | Prerequisites met: {prereqs}";
+                        }
+                    }
+                }
+
+                sb.AppendLine($"- {c.Code} — {c.Title}{cr}{prereqInfo}");
+            }
+
+            sb.AppendLine();
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             sb.AppendLine("Student Question:");
             sb.AppendLine(userQuestion);
 
             return sb.ToString();
         }
 
+<<<<<<< HEAD
+=======
+        private static string ExtractSection(string text, string startMarker, string endMarker)
+        {
+            var startIndex = text.IndexOf(startMarker, StringComparison.Ordinal);
+            if (startIndex < 0)
+            {
+                Console.WriteLine($"ExtractSection: Start marker '{startMarker}' not found");
+                return "";
+            }
+
+            startIndex += startMarker.Length;
+            var endIndex = text.IndexOf(endMarker, startIndex, StringComparison.Ordinal);
+
+            if (endIndex < 0)
+                endIndex = text.Length;
+
+            var extracted = text.Substring(startIndex, endIndex - startIndex);
+            Console.WriteLine($"ExtractSection: Extracted {extracted.Length} chars from '{startMarker}' to '{endMarker}'");
+            return extracted;
+        }
+
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
         private static string BuildGeneralPromptWithRAG(
             string userQuestion,
             string studentContext,
@@ -1336,6 +1941,7 @@ Recommended format:
 
             var sb = new StringBuilder();
             sb.AppendLine(@"
+<<<<<<< HEAD
 You are an AI Academic Advisor.
 
 STRICT RULES:
@@ -1345,6 +1951,17 @@ STRICT RULES:
 - Keep the answer clear, short, and directly relevant.
 - When possible, prioritize the bulletin content over general assumptions.
 ".Trim());
+=======
+                You are an AI Academic Advisor.
+
+                STRICT RULES:
+                - Use the short snapshot for identity/completed courses.
+                - Use ONLY the course list and bulletin content provided below for codes/names.
+                - Do NOT invent course codes/names.
+                - Keep it short and do NOT repeat the full DB context.
+                - When answering, prioritize information from the BULLETIN CONTENT sections.
+                ".Trim());
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
 
             sb.AppendLine();
             sb.AppendLine("Student Snapshot:");
@@ -1353,7 +1970,11 @@ STRICT RULES:
 
             if (studentContext.Contains("Core 39 General Education Progress:"))
             {
+<<<<<<< HEAD
                 var core39Section = ExtractSection(studentContext, "Core 39 General Education Progress:", "GPA Calculation");
+=======
+                var core39Section = ExtractSection(studentContext, "Core 39 General Education Progress:", "=== END");
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                 if (!string.IsNullOrEmpty(core39Section))
                 {
                     sb.AppendLine("Core 39 Requirements Status:");
@@ -1373,6 +1994,7 @@ STRICT RULES:
                 }
             }
 
+<<<<<<< HEAD
             if (!string.IsNullOrWhiteSpace(catalogName))
             {
                 sb.AppendLine($"Catalog from PDF: {catalogName}");
@@ -1396,10 +2018,27 @@ STRICT RULES:
                 foreach (var hit in ragHits)
                 {
                     sb.AppendLine($"[Page {hit.Page}] {hit.Snippet}");
+=======
+            sb.AppendLine();
+            sb.AppendLine($"Catalog from PDF: {catalogName}");
+
+            if (supportingDocs.Count > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine("SUPPORTING DOCUMENTS (syllabi, guides, policies):");
+                foreach (var doc in supportingDocs)
+                {
+                    sb.AppendLine($"[{doc.DocumentType}] {doc.DocumentName}:");
+                    foreach (var hit in doc.RelevantHits)
+                    {
+                        sb.AppendLine($"  Page {hit.Page}: {hit.Snippet}");
+                    }
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     sb.AppendLine();
                 }
             }
 
+<<<<<<< HEAD
             if (supportingDocs.Count > 0)
             {
                 sb.AppendLine("Relevant Supporting Documents:");
@@ -1408,16 +2047,260 @@ STRICT RULES:
                     sb.AppendLine($"Document: {doc.DocumentName} ({doc.DocumentType}, {doc.DocumentYear})");
                     foreach (var hit in doc.RelevantHits.Take(2))
                         sb.AppendLine($"- [Page {hit.Page}] {hit.Snippet}");
+=======
+            sb.AppendLine("Course List (subset):");
+            foreach (var c in sample)
+            {
+                var cr = !string.IsNullOrWhiteSpace(c.CreditsText) ? $" ({c.CreditsText} cr)" : "";
+                sb.AppendLine($"- {c.Code} — {c.Title}{cr}");
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("Question:");
+            sb.AppendLine(userQuestion);
+
+            return sb.ToString();
+        }
+
+        private static string ShortSnapshot(string studentContext)
+        {
+            string FindLine(string prefix)
+            {
+                foreach (var line in studentContext.Split('\n'))
+                {
+                    var l = line.Trim();
+                    if (l.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                        return l.Substring(prefix.Length).Trim();
+                }
+                return "(not available)";
+            }
+
+            var name = FindLine("Name:");
+            var major = FindLine("Major:");
+            var gpa = FindLine("Current GPA:");
+            var credits = FindLine("Credits Earned:");
+
+            return $"- Name: {name}\n- Major: {major}\n- GPA: {gpa}\n- Credits: {credits}";
+        }
+
+        private static string BuildCitationsWithDocs(
+            List<RagHit> bulletinHits,
+            string pdfName,
+            string bulletinYear,
+            List<DocumentSearchResult> supportingDocs)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("---");
+            sb.AppendLine("**Sources:**");
+
+            if (bulletinHits.Count > 0)
+            {
+                foreach (var hit in bulletinHits.OrderBy(h => h.Page))
+                {
+                    sb.AppendLine($"- Page {hit.Page} of {pdfName} ({bulletinYear})");
+                }
+            }
+
+            if (supportingDocs.Count > 0)
+            {
+                foreach (var doc in supportingDocs)
+                {
+                    var pages = string.Join(", ", doc.RelevantHits.Select(h => h.Page).Distinct().OrderBy(p => p));
+                    sb.AppendLine($"- {doc.DocumentType}: {doc.DocumentName} (Pages {pages})");
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        private void LogChatUsage()
+        {
+            var sid = HttpContext.Session.GetInt32("StudentID");
+            if (!sid.HasValue) return;
+
+            var today = DateTime.Today;
+            var checkSql = @"
+                SELECT LogID, MessageCount 
+                FROM ChatUsageLogs 
+                WHERE StudentID = @sid AND SessionDate = @date";
+
+            var existing = _dbHelper.ExecuteQuery(checkSql, new[]
+            {
+                new MySqlParameter("@sid", MySqlDbType.Int32) { Value = sid.Value },
+                new MySqlParameter("@date", MySqlDbType.Date) { Value = today }
+            }, out var err);
+
+            if (!string.IsNullOrEmpty(err)) return;
+
+            if (existing != null && existing.Rows.Count > 0)
+            {
+                var logId = Convert.ToInt32(existing.Rows[0]["LogID"]);
+                var updateSql = "UPDATE ChatUsageLogs SET MessageCount = MessageCount + 1 WHERE LogID = @logId";
+                _dbHelper.ExecuteNonQuery(updateSql, new[]
+                {
+                    new MySqlParameter("@logId", MySqlDbType.Int32) { Value = logId }
+                }, out _);
+            }
+            else
+            {
+                var insertSql = @"
+                    INSERT INTO ChatUsageLogs (StudentID, MessageCount, SessionDate)
+                    VALUES (@sid, 1, @date)";
+                _dbHelper.ExecuteNonQuery(insertSql, new[]
+                {
+                    new MySqlParameter("@sid", MySqlDbType.Int32) { Value = sid.Value },
+                    new MySqlParameter("@date", MySqlDbType.Date) { Value = today }
+                }, out _);
+            }
+        }
+
+        private List<(string CourseCode, string CourseName, int CreditHours, string Category)> GetRemainingRequiredCourses(int studentId)
+        {
+            var query = @"
+                SELECT 
+                    c.CourseCode,
+                    c.CourseName,
+                    c.CreditHours,
+                    dr.RequirementCategory,
+                    c.TypicalTermsOffered
+                FROM DegreeRequirements dr
+                JOIN Courses c ON dr.CourseID = c.CourseID
+                JOIN DegreePrograms dp ON dr.DegreeID = dp.DegreeID
+                JOIN Students s ON dp.DegreeName = s.Major
+                WHERE s.StudentID = @studentId
+                  AND c.IsActive = 1
+                  AND c.CourseID NOT IN (
+                      SELECT CourseID 
+                      FROM StudentCourseHistory 
+                      WHERE StudentID = @studentId
+                        AND Status IN ('Completed', 'In Progress')
+                  )
+                ORDER BY dr.RequirementCategory, c.CourseCode";
+
+            var result = _dbHelper.ExecuteQuery(query, new[]
+            {
+                new MySqlParameter("@studentId", MySqlDbType.Int32) { Value = studentId }
+            }, out var err);
+
+            var courses = new List<(string, string, int, string)>();
+
+            if (!string.IsNullOrEmpty(err) || result == null) return courses;
+
+            foreach (System.Data.DataRow row in result.Rows)
+            {
+                var code = row["CourseCode"].ToString() ?? "";
+                var name = row["CourseName"].ToString() ?? "";
+                var credits = Convert.ToInt32(row["CreditHours"]);
+                var category = row["RequirementCategory"].ToString() ?? "";
+                var terms = row["TypicalTermsOffered"]?.ToString() ?? "";
+
+                var categoryWithTerms = string.IsNullOrEmpty(terms)
+                    ? category
+                    : $"{category} (Offered: {terms})";
+
+                courses.Add((code, name, credits, categoryWithTerms));
+            }
+
+            return courses;
+        }
+
+        private string BuildGraduationCheckPrompt(string userQuestion, string studentContext, int studentId)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine(@"
+            You are an AI Academic Advisor performing a graduation eligibility check.
+
+                STRICT RULES:
+                - Give a clear YES or NO on whether the student can graduate by their target date.
+                - List every remaining required course by name and code.
+                - List remaining credits needed.
+                - If they have account holds, warn them holds must be cleared before graduation.
+                - Be precise — use only the data provided below.
+                - Keep it concise and well formatted.
+
+                Output format:
+                ## Graduation Check
+                ## Remaining Required Courses
+                ## Credits Summary
+                ## Verdict
+                ## Notes
+            ".Trim());
+
+            sb.AppendLine();
+            sb.AppendLine("Student Snapshot:");
+            sb.AppendLine(ShortSnapshot(studentContext));
+            sb.AppendLine();
+
+            // Full completed courses
+            if (studentContext.Contains("Completed and In-Progress Courses:"))
+            {
+                var coursesSection = ExtractSection(studentContext, "Completed and In-Progress Courses:", "Core 39");
+                if (!string.IsNullOrEmpty(coursesSection))
+                {
+                    sb.AppendLine("Completed/In-Progress Courses:");
+                    sb.AppendLine(coursesSection.Trim());
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
                     sb.AppendLine();
                 }
             }
 
+<<<<<<< HEAD
+=======
+            // Current degree plan
+            if (studentContext.Contains("Current Degree Plan"))
+            {
+                var planSection = ExtractSection(studentContext, "Current Degree Plan (PlannedCourses):", "=== END");
+                if (!string.IsNullOrEmpty(planSection))
+                {
+                    sb.AppendLine("Currently Planned Courses:");
+                    sb.AppendLine(planSection.Trim());
+                    sb.AppendLine();
+                }
+            }
+
+            // Core 39
+            if (studentContext.Contains("Core 39 General Education Progress:"))
+            {
+                var core39Section = ExtractSection(studentContext, "Core 39 General Education Progress:", "GPA Calculation");
+                if (!string.IsNullOrEmpty(core39Section))
+                {
+                    sb.AppendLine("Core 39 Progress:");
+                    sb.AppendLine(core39Section.Trim());
+                    sb.AppendLine();
+                }
+            }
+
+            // Remaining required courses from DB
+            var remaining = GetRemainingRequiredCourses(studentId);
+            sb.AppendLine("Remaining Required Courses (not yet completed or in progress):");
+            if (remaining.Count == 0)
+            {
+                sb.AppendLine("- NONE — all required courses completed!");
+            }
+            else
+            {
+                foreach (var (code, name, credits, category) in remaining)
+                    sb.AppendLine($"- {code}: {name} ({credits} cr) [{category}]");
+            }
+
+            sb.AppendLine();
+
+            // Credits summary
+            var creditsLine = studentContext.Split('\n')
+                .FirstOrDefault(l => l.Contains("Credits Earned:"));
+            if (creditsLine != null)
+                sb.AppendLine(creditsLine.Trim());
+
+            sb.AppendLine();
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
             sb.AppendLine("Student Question:");
             sb.AppendLine(userQuestion);
 
             return sb.ToString();
         }
 
+<<<<<<< HEAD
         private List<(string code, string name, int credits, string category)> GetRemainingRequiredCourses(int studentId)
         {
             var list = new List<(string code, string name, int credits, string category)>();
@@ -1490,3 +2373,7 @@ STRICT RULES:
         }
     }
 }
+=======
+    }
+}
+>>>>>>> e316d47c9015c6fb5708110f0b70919944db7e21
