@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using UglyToad.PdfPig;
+using UglyToad.PdfPig.Content;
 
 namespace CS_483_CSI_477.Services
 {
@@ -59,6 +60,56 @@ namespace CS_483_CSI_477.Services
                     Text = "(No text extracted. If the PDF is scanned (image-only), OCR is required.)"
                 });
             }
+
+            return result;
+        }
+
+        // Extracts text preserving line structure using word positions
+        // Used for structured documents like Degree Works transcripts
+        public PdfExtractResult ExtractWithLines(byte[] pdfBytes, string fileName,
+            int maxPages = 30, int maxCharsTotal = 300_000)
+        {
+            using var ms = new MemoryStream(pdfBytes);
+            using var doc = PdfDocument.Open(ms);
+
+            int pagesToRead = Math.Min(doc.NumberOfPages, maxPages);
+            var result = new PdfExtractResult { FileName = fileName };
+            var charBudget = maxCharsTotal;
+
+            for (int i = 1; i <= pagesToRead; i++)
+            {
+                if (charBudget <= 0) break;
+
+                var page = doc.GetPage(i);
+                var words = page.GetWords().ToList();
+
+                if (!words.Any()) continue;
+
+                // Group words into lines by their Y position (rounded to nearest 2 units)
+                var lines = words
+                    .GroupBy(w => Math.Round(w.BoundingBox.Bottom / 2.0) * 2)
+                    .OrderByDescending(g => g.Key) // top of page first
+                    .Select(g => string.Join(" ",
+                        g.OrderBy(w => w.BoundingBox.Left)
+                         .Select(w => w.Text)))
+                    .Where(l => !string.IsNullOrWhiteSpace(l))
+                    .ToList();
+
+                var text = string.Join("\n", lines);
+
+                if (text.Length > charBudget)
+                    text = text.Substring(0, charBudget);
+
+                result.Pages.Add(new PdfPageText { Page = i, Text = text });
+                charBudget -= text.Length;
+            }
+
+            if (result.Pages.Count == 0)
+                result.Pages.Add(new PdfPageText
+                {
+                    Page = 1,
+                    Text = "(No text extracted.)"
+                });
 
             return result;
         }

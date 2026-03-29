@@ -41,6 +41,7 @@ namespace CS_483_CSI_477.Pages
 
         public string? ErrorMessage { get; set; }
         public string? PdfFileName { get; set; }
+        public string? TranscriptFileName { get; set; }
         public string? LoadedStudentSummary { get; set; }
 
         [BindProperty] public string UserMessage { get; set; } = "";
@@ -54,6 +55,8 @@ namespace CS_483_CSI_477.Pages
         private const string ALT_PDF_PAGES_JSON_KEY = "AltPdfPagesJson";
         private const string ALT_PDF_FILENAME_KEY = "AltPdfFileName";
         private const string ALT_BULLETIN_YEAR_KEY = "AltBulletinYear";
+        private const string TRANSCRIPT_CONTEXT_KEY = "DegreeWorksContext";
+        private const string TRANSCRIPT_FILENAME_KEY = "DegreeWorksFileName";
 
         public ChatModel(
             DatabaseHelper dbHelper,
@@ -100,6 +103,20 @@ namespace CS_483_CSI_477.Pages
             await TryAutoLoadBulletinAsync();
 
             PdfFileName = HttpContext.Session.GetString(PDF_FILENAME_KEY);
+
+            // Auto-load transcript context from DB BEFORE building student context
+            // so the transcript gets injected into the AI prompt
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString(TRANSCRIPT_CONTEXT_KEY)))
+            {
+                var saved = LoadTranscriptFromDb(studentId);
+                if (!string.IsNullOrEmpty(saved))
+                {
+                    HttpContext.Session.SetString(TRANSCRIPT_CONTEXT_KEY, saved);
+                    HttpContext.Session.SetString(TRANSCRIPT_FILENAME_KEY, "Degree Works (saved)");
+                }
+            }
+
+            TranscriptFileName = HttpContext.Session.GetString(TRANSCRIPT_FILENAME_KEY);
             await EnsureStudentContextLoadedAsync();
 
             Messages = await _chatLogStore.LoadAsync(ChatId);
@@ -120,6 +137,18 @@ namespace CS_483_CSI_477.Pages
             await EnsureChatIdAsync(studentId);
 
             PdfFileName = HttpContext.Session.GetString(PDF_FILENAME_KEY);
+
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString(TRANSCRIPT_CONTEXT_KEY)))
+            {
+                var saved = LoadTranscriptFromDb(studentId);
+                if (!string.IsNullOrEmpty(saved))
+                {
+                    HttpContext.Session.SetString(TRANSCRIPT_CONTEXT_KEY, saved);
+                    HttpContext.Session.SetString(TRANSCRIPT_FILENAME_KEY, "Degree Works (saved)");
+                }
+            }
+
+            TranscriptFileName = HttpContext.Session.GetString(TRANSCRIPT_FILENAME_KEY);
             await EnsureStudentContextLoadedAsync();
             Messages = await _chatLogStore.LoadAsync(ChatId);
             await LoadSidebarAsync(studentId);
@@ -842,6 +871,16 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
                 sb.AppendLine("- (No planned courses yet)");
             }
 
+            // Inject Degree Works transcript if available
+            var transcriptContext = HttpContext.Session.GetString(TRANSCRIPT_CONTEXT_KEY);
+            _logger.LogInformation("=== TRANSCRIPT CONTEXT CHECK === Length: {Length}",
+                transcriptContext?.Length ?? 0);
+            if (!string.IsNullOrEmpty(transcriptContext))
+            {
+                sb.AppendLine();
+                sb.AppendLine(transcriptContext);
+            }
+
             sb.AppendLine();
             sb.AppendLine("=== END STUDENT DB CONTEXT ===");
 
@@ -1122,30 +1161,41 @@ Prefer the current database context, planner data, and bulletin/supporting-docum
             var sb = new StringBuilder();
 
             sb.AppendLine(@"
-You are an AI Academic Advisor performing a graduation eligibility check.
+                You are an AI Academic Advisor performing a graduation eligibility check.
 
-STRICT RULES:
-- Give a clear YES or NO on whether the student can graduate by their target date.
-- List every remaining required course by name and code.
-- List remaining credits needed.
-- If they have account holds, warn them holds must be cleared before graduation.
-- Be precise and use only the data provided below.
-- Keep it concise and well formatted.
+               STRICT RULES:
+                - Give a clear YES or NO on whether the student can graduate by their target date.
+                - List every remaining required course by name and code.
+                - List remaining credits needed.
+                - If they have account holds, warn them holds must be cleared before graduation.
+                - Be precise and use only the data provided below.
+                - Keep it concise and well formatted.
+                - If a DEGREE WORKS TRANSCRIPT section is present in the student context, use it as the authoritative source for completed courses and transfer credits.
 
-Output format:
-## Graduation Check
-## Remaining Required Courses
-## Credits Summary
-## Verdict
-## Notes
-".Trim());
+                Output format:
+                ## Graduation Check
+                ## Remaining Required Courses
+                ## Credits Summary
+                ## Verdict
+                ## Notes
+                ".Trim());
 
             sb.AppendLine();
             sb.AppendLine("Student Snapshot:");
             sb.AppendLine(ShortSnapshot(studentContext));
             sb.AppendLine();
 
+            var transcriptStartGrad = studentContext.IndexOf("=== DEGREE WORKS TRANSCRIPT", StringComparison.Ordinal);
+            if (transcriptStartGrad >= 0)
+            {
+                sb.AppendLine("Degree Works Transcript (authoritative source for courses, transfers, AP credits):");
+                sb.AppendLine(studentContext.Substring(transcriptStartGrad));
+                sb.AppendLine();
+            }
+
             if (studentContext.Contains("Completed and In-Progress Courses:"))
+
+                if (studentContext.Contains("Completed and In-Progress Courses:"))
             {
                 var coursesSection = ExtractSection(studentContext, "Completed and In-Progress Courses:", "Core 39");
                 if (!string.IsNullOrEmpty(coursesSection))
@@ -1217,27 +1267,37 @@ Output format:
             var sb = new StringBuilder();
 
             sb.AppendLine(@"
-You are an AI Academic Advisor helping a student decide what courses to take next.
+                You are an AI Academic Advisor helping a student decide what courses to take next.
 
-STRICT RULES:
-- Use the student snapshot and completed/in-progress courses below.
-- Use only course codes and names that appear in the provided bulletin/course data.
-- Do not invent courses.
-- Prefer required courses before electives when reasonable.
-- Mention prerequisite issues if shown.
-- Keep the answer practical and concise.
-- If the student has account holds, remind them holds may affect registration.
+                STRICT RULES:
+                - Use the student snapshot and completed/in-progress courses below.
+                - Use only course codes and names that appear in the provided bulletin/course data.
+                - Do not invent courses.
+                - Prefer required courses before electives when reasonable.
+                - Mention prerequisite issues if shown.
+                - Keep the answer practical and concise.
+                - If the student has account holds, remind them holds may affect registration.
+                - ONLY recommend courses relevant to the student's major or Core 39 requirements. Do NOT recommend or invent minor requirements unless a minor is explicitly declared in the student's profile.
+                - If a DEGREE WORKS TRANSCRIPT section is present in the student context, use it as the authoritative source for completed courses and transfer credits when recommending next courses.
 
-Recommended format:
-## Suggested Courses
-## Why These Courses
-## Notes
-".Trim());
+                Recommended format:
+                ## Suggested Courses
+                ## Why These Courses
+                ## Notes
+                ".Trim());
 
             sb.AppendLine();
             sb.AppendLine("Student Snapshot:");
             sb.AppendLine(ShortSnapshot(studentContext));
             sb.AppendLine();
+
+            var transcriptStartPlan = studentContext.IndexOf("=== DEGREE WORKS TRANSCRIPT", StringComparison.Ordinal);
+            if (transcriptStartPlan >= 0)
+            {
+                sb.AppendLine("Degree Works Transcript (authoritative source for courses, transfers, AP credits):");
+                sb.AppendLine(studentContext.Substring(transcriptStartPlan));
+                sb.AppendLine();
+            }
 
             if (studentContext.Contains("Completed and In-Progress Courses:"))
             {
@@ -1262,6 +1322,8 @@ Recommended format:
             }
 
             if (recommended.Count > 0)
+
+                if (recommended.Count > 0)
             {
                 sb.AppendLine("Recommended Next Courses From Bulletin:");
                 foreach (var c in recommended)
@@ -1336,20 +1398,31 @@ Recommended format:
 
             var sb = new StringBuilder();
             sb.AppendLine(@"
-You are an AI Academic Advisor.
+                You are an AI Academic Advisor.
 
-STRICT RULES:
-- Use the short snapshot for identity and academic status.
-- Use only the course list and bulletin/supporting-document content provided below for course names and codes.
-- Do not invent course codes or requirements.
-- Keep the answer clear, short, and directly relevant.
-- When possible, prioritize the bulletin content over general assumptions.
-".Trim());
+                STRICT RULES:
+                - Use the short snapshot for identity and academic status.
+                - Use only the course list and bulletin/supporting-document content provided below for course names and codes.
+                - Do not invent course codes or requirements.
+                - Keep the answer clear, short, and directly relevant.
+                - When possible, prioritize the bulletin content over general assumptions.
+                - ONLY reference courses relevant to the student's major or Core 39 requirements. Do NOT recommend or invent minor requirements unless a minor is explicitly declared in the student's profile.
+                - If a DEGREE WORKS TRANSCRIPT section is present in the student context, treat it as the authoritative source for completed courses, transfer credits, AP credits, and in-progress courses. It overrides any empty course history from the database.
+                - Never say there are no transfer credits if the Degree Works transcript lists transfer or AP credits.
+                ".Trim());
 
             sb.AppendLine();
             sb.AppendLine("Student Snapshot:");
             sb.AppendLine(snap);
             sb.AppendLine();
+
+            var transcriptStartGen = studentContext.IndexOf("=== DEGREE WORKS TRANSCRIPT", StringComparison.Ordinal);
+            if (transcriptStartGen >= 0)
+            {
+                sb.AppendLine("Degree Works Transcript (authoritative source for courses, transfers, AP credits):");
+                sb.AppendLine(studentContext.Substring(transcriptStartGen));
+                sb.AppendLine();
+            }
 
             if (studentContext.Contains("Core 39 General Education Progress:"))
             {
@@ -1487,6 +1560,32 @@ STRICT RULES:
 
             if (line == null) return "";
             return line.Replace("Degree Code:", "", StringComparison.OrdinalIgnoreCase).Trim();
+        }
+
+        private string? LoadTranscriptFromDb(int studentId)
+        {
+            try
+            {
+                var sql = @"
+                    SELECT ParsedContextText
+                    FROM StudentTranscripts
+                    WHERE StudentID = @sid AND IsActive = 1
+                    LIMIT 1";
+
+                var result = _dbHelper.ExecuteQuery(sql, new[]
+                {
+                    new MySqlParameter("@sid", MySqlDbType.Int32) { Value = studentId }
+                }, out _);
+
+                if (result != null && result.Rows.Count > 0 && result.Rows[0][0] != DBNull.Value)
+                    return result.Rows[0][0]?.ToString();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not load transcript from DB for student {StudentId}", studentId);
+            }
+
+            return null;
         }
     }
 }

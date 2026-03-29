@@ -161,6 +161,23 @@
                     </div>
 
                     <form method="post" enctype="multipart/form-data" data-ai-form class="chat-input-area" id="chatForm">
+                        @if (!string.IsNullOrEmpty(Model.TranscriptFileName))
+                        {
+                            <div class="mb-2 p-2" style="background:var(--slate-50); border-radius:8px; font-size:0.78rem;">
+                                <i class="bi bi-file-earmark-check-fill me-1" style="color:var(--success);" aria-hidden="true"></i>
+                                <strong>Degree Works loaded:</strong> @Model.TranscriptFileName
+                                <a href="/Transcript" class="ms-2" style="font-size:0.75rem;">Update</a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-2 p-2" style="background:#fef9c3; border-radius:8px; font-size:0.78rem; color:#854d0e;">
+                                <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+                                No Degree Works transcript loaded.
+                                <a href="/Transcript" class="ms-1" style="color:#854d0e; font-weight:600;">Upload yours</a>
+                                for better AI accuracy with transfer credits.
+                            </div>
+                        }
                         <div class="mb-2">
                             <label for="UploadedPdf" class="form-label" style="font-size:0.75rem; margin-bottom:0.3rem;">
                                 <i class="bi bi-paperclip me-1" aria-hidden="true"></i>Attach Academic Plan (PDF, optional)
@@ -220,6 +237,7 @@
         if (userInput) {
             userInput.addEventListener('input', updateSendBtn);
             window.addEventListener('load', function () {
+                userInput.value = '';
                 userInput.focus();
                 updateSendBtn();
             });

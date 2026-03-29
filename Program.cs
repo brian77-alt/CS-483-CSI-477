@@ -87,6 +87,7 @@ builder.Services.AddSingleton<EmailService>();
 builder.Services.AddSingleton<AccountHoldService>();
 builder.Services.AddSingleton<BulletinCourseParser>();
 builder.Services.AddSingleton<ChatMemoryService>();
+builder.Services.AddSingleton<DegreeWorksParserService>();
 
 // ── Gemini AI - faster timeout + retry ───────────────────
 builder.Services.AddHttpClient<GeminiService>(client =>

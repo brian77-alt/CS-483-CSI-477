@@ -119,6 +119,13 @@
                                     <i class="bi bi-calendar3" aria-hidden="true"></i>Planner
                                 </a>
                             </li>
+                            <li class="nav-item" role="listitem">
+                                <a class="nav-link @(ViewContext.RouteData.Values["page"]?.ToString() == "/Transcript" ? "active" : "")"
+                                   asp-page="/Transcript"
+                                   aria-current="@(ViewContext.RouteData.Values["page"]?.ToString() == "/Transcript" ? "page" : null)">
+                                    <i class="bi bi-file-earmark-text" aria-hidden="true"></i>Transcript
+                                </a>
+                            </li>
                         }
                     </ul>
 
