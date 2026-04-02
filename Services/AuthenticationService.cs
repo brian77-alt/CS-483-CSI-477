@@ -59,8 +59,34 @@ namespace CS_483_CSI_477.Services
                     return new AuthResult { Success = false, Message = "Account not properly configured." };
                 }
 
-                // Verify password against hash
-                if (BCrypt.Net.BCrypt.Verify(password, storedHash))
+                // Verify password against BCrypt hash
+                bool passwordValid = false;
+                if (storedHash.StartsWith("$2"))
+                {
+                    // BCrypt hash — verify normally
+                    passwordValid = BCrypt.Net.BCrypt.Verify(password, storedHash);
+                }
+                else
+                {
+                    // Legacy SHA-256 hash — verify and re-hash with BCrypt on success
+                    using var sha256 = System.Security.Cryptography.SHA256.Create();
+                    var bytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                    var sha256Hash = Convert.ToHexString(bytes).ToLowerInvariant();
+                    if (sha256Hash == storedHash)
+                    {
+                        passwordValid = true;
+                        // Upgrade to BCrypt
+                        var newHash = BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
+                        var upgradeSql = "UPDATE Students SET PasswordHash = @hash WHERE Email = @email";
+                        _dbHelper.ExecuteNonQuery(upgradeSql, new[]
+                        {
+                            new MySqlParameter("@hash",  MySqlDbType.VarChar) { Value = newHash },
+                            new MySqlParameter("@email", MySqlDbType.VarChar) { Value = email }
+                        }, out _);
+                    }
+                }
+
+                if (passwordValid)
                 {
                     return new AuthResult
                     {

@@ -17,8 +17,7 @@ namespace CS_483_CSI_477.Services
         /// Send email verification link
         public async Task<bool> SendVerificationEmailAsync(string toEmail, string toName, string verificationToken)
         {
-            var verificationLink = $"{_configuration["AppUrl"]}/VerifyEmail?token={verificationToken}";
-
+            var verificationLink = $"{(_configuration["AppUrl"] ?? "").TrimEnd('/')}/VerifyEmail?token={verificationToken}";
             var subject = "Verify Your Email - AI Academic Advisor";
             var body = $@"
                 <html>
@@ -42,8 +41,7 @@ namespace CS_483_CSI_477.Services
         /// Send password reset link
         public async Task<bool> SendPasswordResetEmailAsync(string toEmail, string toName, string resetToken)
         {
-            var resetLink = $"{_configuration["AppUrl"]}/ResetPassword?token={resetToken}";
-
+            var resetLink = $"{(_configuration["AppUrl"] ?? "").TrimEnd('/')}/ResetPassword?token={resetToken}";
             var subject = "Password Reset Request - AI Academic Advisor";
             var body = $@"
                 <html>
