@@ -159,9 +159,38 @@ namespace CS_483_CSI_477.Services
             }
         }
 
+        private static readonly HashSet<string> SubLabelRx = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Directed Electives", "General Electives"
+        };
+
         private void ParseBlocksAndCourses(List<string> lines, DegreeWorksTranscript t)
         {
+            // Pre-process: join lines where "Second" or "First" got split from "Summer YYYY"
+            var joinedLines = new List<string>();
+            for (int i = 0; i < lines.Count; i++)
+            {
+                var current = lines[i].TrimEnd();
+                if (i + 1 < lines.Count)
+                {
+                    var next = lines[i + 1].Trim();
+                    if ((current.EndsWith("Second", StringComparison.OrdinalIgnoreCase) ||
+                         current.EndsWith("First", StringComparison.OrdinalIgnoreCase))
+                        && Regex.IsMatch(next, @"^(Development\s+)?Summer\s+\d{4}$", RegexOptions.IgnoreCase))
+                    {
+                        // Strip "Development" prefix if present, keep only "Second/First Summer YYYY"
+                        var termPart = Regex.Replace(next, @"^Development\s+", "", RegexOptions.IgnoreCase);
+                        joinedLines.Add(current + " " + termPart);
+                        i++;
+                        continue;
+                    }
+                }
+                joinedLines.Add(current);
+            }
+            lines = joinedLines;
+
             string currentBlock = "";
+            string currentSubLabel = "";
             DegreeWorksCourse? lastCourse = null;
 
             foreach (var line in lines)
@@ -173,6 +202,7 @@ namespace CS_483_CSI_477.Services
                     var blockName = blockMatch.Groups[1].Value.Trim();
                     var blockStatus = blockMatch.Groups[2].Value.Trim().ToUpperInvariant();
                     currentBlock = blockName;
+                    currentSubLabel = "";
 
                     var block = new DegreeWorksBlock
                     {
@@ -207,6 +237,19 @@ namespace CS_483_CSI_477.Services
                     }
                 }
 
+                // Check for sub-labels within a block (e.g. "Directed Electives", "General Electives")
+                if (!blockMatch.Success && !TransferLineRx.IsMatch(line) && !CourseLineRx.IsMatch(line))
+                {
+                    var trimmed = line.Trim();
+                    if (SubLabelRx.Contains(trimmed))
+                    {
+                        // Normalize to canonical name regardless of PDF casing
+                        currentSubLabel = trimmed.ToLowerInvariant().Contains("general")
+                            ? "General Electives"
+                            : "Directed Electives";
+                    }
+                }
+
                 // Check for transfer/AP line
                 var transferMatch = TransferLineRx.Match(line);
                 if (transferMatch.Success && lastCourse != null)
@@ -228,6 +271,7 @@ namespace CS_483_CSI_477.Services
                 if (courseMatch.Success)
                 {
                     var grade = courseMatch.Groups[3].Value.Trim();
+                    bool isIp = grade.Equals("IP", StringComparison.OrdinalIgnoreCase);
                     var course = new DegreeWorksCourse
                     {
                         CourseCode = courseMatch.Groups[1].Value.Trim(),
@@ -235,10 +279,10 @@ namespace CS_483_CSI_477.Services
                         Grade = grade,
                         Credits = int.Parse(courseMatch.Groups[4].Value),
                         Term = courseMatch.Groups[5].Value.Trim(),
-                        IsInProgress = grade.Equals("IP", StringComparison.OrdinalIgnoreCase),
+                        IsInProgress = isIp,
                         IsWithdrawn = grade.Equals("W", StringComparison.OrdinalIgnoreCase)
-                                    || grade.Equals("WF", StringComparison.OrdinalIgnoreCase),
-                        Block = currentBlock
+                                || grade.Equals("WF", StringComparison.OrdinalIgnoreCase),
+                        Block = string.IsNullOrEmpty(currentSubLabel) ? currentBlock : currentSubLabel
                     };
 
                     t.AllCourses.Add(course);

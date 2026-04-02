@@ -87,7 +87,7 @@ namespace CS_483_CSI_477.Services
 
                 // Group words into lines by their Y position (rounded to nearest 2 units)
                 var lines = words
-                    .GroupBy(w => Math.Round(w.BoundingBox.Bottom / 2.0) * 2)
+                    .GroupBy(w => Math.Round(w.BoundingBox.Bottom / 3.0) * 3)
                     .OrderByDescending(g => g.Key) // top of page first
                     .Select(g => string.Join(" ",
                         g.OrderBy(w => w.BoundingBox.Left)

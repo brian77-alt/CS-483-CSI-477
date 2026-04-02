@@ -534,6 +534,27 @@ namespace CS_483_CSI_477.Pages
 
                     string term = row["PlannedTerm"]?.ToString() ?? "";
                     int year = Convert.ToInt32(row["PlannedYear"]);
+
+                    // Dynamically add Summer semester if needed
+                    if (term == "Summer")
+                    {
+                        var existing = Semesters.FirstOrDefault(s => s.Term == "Summer" && s.Year == year);
+                        if (existing == null)
+                        {
+                            var springIdx = Semesters.FindIndex(s => s.Term == "Spring" && s.Year == year);
+                            var fallIdx = Semesters.FindIndex(s => s.Term == "Fall" && s.Year == year);
+                            var insertIdx = springIdx >= 0 ? springIdx + 1
+                                          : fallIdx >= 0 ? fallIdx
+                                          : Semesters.Count;
+                            Semesters.Insert(insertIdx, new SemesterPlan
+                            {
+                                Term = "Summer",
+                                Year = year,
+                                Courses = new List<PlannedCourse>()
+                            });
+                        }
+                    }
+
                     var semester = Semesters.FirstOrDefault(s => s.Term == term && s.Year == year);
                     semester?.Courses.Add(course);
                 }
@@ -561,6 +582,28 @@ namespace CS_483_CSI_477.Pages
                     int courseId = Convert.ToInt32(row["CourseID"]);
                     string term = row["PlannedTerm"]?.ToString() ?? "";
                     int year = Convert.ToInt32(row["PlannedYear"]);
+
+                    // Dynamically add Summer semester if it doesn't exist yet
+                    if (term == "Summer")
+                    {
+                        var existing = Semesters.FirstOrDefault(s => s.Term == "Summer" && s.Year == year);
+                        if (existing == null)
+                        {
+                            // Insert Summer between Spring and Fall of the same year
+                            var springIdx = Semesters.FindIndex(s => s.Term == "Spring" && s.Year == year);
+                            var fallIdx = Semesters.FindIndex(s => s.Term == "Fall" && s.Year == year);
+                            var insertIdx = springIdx >= 0 ? springIdx + 1
+                                          : fallIdx >= 0 ? fallIdx
+                                          : Semesters.Count;
+                            Semesters.Insert(insertIdx, new SemesterPlan
+                            {
+                                Term = "Summer",
+                                Year = year,
+                                Courses = new List<PlannedCourse>()
+                            });
+                        }
+                    }
+
                     var semester = Semesters.FirstOrDefault(s => s.Term == term && s.Year == year);
                     if (semester == null) continue;
 

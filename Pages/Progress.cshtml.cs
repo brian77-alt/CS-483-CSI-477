@@ -29,9 +29,10 @@ namespace CS_483_CSI_477.Pages
 
         public string CoreRequirement2Label { get; set; } = "Advanced CS Courses";
         public int CoreRequirement2Credits { get; set; }
-        public int CoreRequirement2Required { get; set; } = 12;
+        public int CoreRequirement2Required { get; set; } = 6;
 
         public int ElectiveCredits { get; set; }
+        public int GeneralElectiveCredits { get; set; }
         public int Core39Credits { get; set; }
 
         private static readonly HashSet<string> Core39CourseCodes = new(StringComparer.OrdinalIgnoreCase)
@@ -156,16 +157,25 @@ namespace CS_483_CSI_477.Pages
             string degreeCode = degreeResult.Rows[0]["DegreeCode"].ToString()!;
 
             string breakdownQuery = $@"
-                SELECT 
-                    dr.RequirementCategory,
+                SELECT
+                    CASE
+                        WHEN sch.RequirementCategory IS NOT NULL THEN sch.RequirementCategory
+                        ELSE dr.RequirementCategory
+                    END as RequirementCategory,
                     SUM(c.CreditHours) as EarnedCredits
                 FROM StudentCourseHistory sch
                 JOIN Courses c ON sch.CourseID = c.CourseID
-                JOIN DegreeRequirements dr ON c.CourseID = dr.CourseID
+                LEFT JOIN DegreeRequirements dr ON c.CourseID = dr.CourseID
+                    AND dr.DegreeID = {degreeId}
+                    AND sch.RequirementCategory IS NULL
                 WHERE sch.StudentID = {studentId}
-                  AND dr.DegreeID = {degreeId}
                   AND sch.Status = 'Completed'
-                GROUP BY dr.RequirementCategory";
+                  AND (sch.RequirementCategory IS NOT NULL OR dr.RequirementCategory IS NOT NULL)
+                GROUP BY
+                    CASE
+                        WHEN sch.RequirementCategory IS NOT NULL THEN sch.RequirementCategory
+                        ELSE dr.RequirementCategory
+                    END";
 
             var breakdown = _dbHelper.ExecuteQuery(breakdownQuery, out _);
             if (breakdown != null)
@@ -182,8 +192,10 @@ namespace CS_483_CSI_477.Pages
                             CoreRequirement1Credits += credits;
                         else if (category.Contains("Advanced") || category.Contains("Programming"))
                             CoreRequirement2Credits += credits;
-                        else if (category.Contains("Elective"))
+                        else if (category == "Directed Electives")
                             ElectiveCredits += credits;
+                        else if (category == "General Electives")
+                            GeneralElectiveCredits += credits;
                     }
                     else
                     {
@@ -194,7 +206,8 @@ namespace CS_483_CSI_477.Pages
 
                         if (category.Contains("Business Core")) CoreRequirement1Credits += credits;
                         else if (category.Contains("CIS Core")) CoreRequirement2Credits += credits;
-                        else if (category.Contains("Elective")) ElectiveCredits += credits;
+                        else if (category == "Directed Electives") ElectiveCredits += credits;
+                        else if (category == "General Electives") GeneralElectiveCredits += credits;
                     }
                 }
             }

@@ -99,7 +99,6 @@ namespace CS_483_CSI_477.Pages
                 // Extract text via PdfService
                 var extract = _pdfService.ExtractWithLines(fileBytes, transcriptFile.FileName, maxPages: 30, maxCharsTotal: 300_000);
                 var fullText = string.Join("\n", extract.Pages.Select(p => p.Text));
-
                 // Parse the Degree Works content
                 var transcript = _parser.Parse(fullText);
 
@@ -237,11 +236,13 @@ namespace CS_483_CSI_477.Pages
             if (pdfBytes == null)
                 return Content("Could not download PDF");
 
-            var extract = _pdfService.ExtractWithLines(pdfBytes, "debug.pdf", maxPages: 2, maxCharsTotal: 5000);
+            var extract = _pdfService.ExtractWithLines(pdfBytes, "debug.pdf", maxPages: 10, maxCharsTotal: 50000);
             var fullText = string.Join("\n---PAGE BREAK---\n", extract.Pages.Select(p => p.Text));
 
-            return Content($"Pages extracted: {extract.Pages.Count}\n\nFirst 3000 chars:\n{fullText.Substring(0, Math.Min(3000, fullText.Length))}",
-                "text/plain");
+            var idx = fullText.IndexOf("ECE 241", StringComparison.OrdinalIgnoreCase);
+            if (idx >= 0)
+                return Content($"Found ECE 241 at position {idx}:\n\n{fullText.Substring(Math.Max(0, idx - 200), Math.Min(500, fullText.Length - Math.Max(0, idx - 200)))}", "text/plain");
+            return Content($"ECE 241 NOT FOUND in {extract.Pages.Count} pages. Total chars: {fullText.Length}\n\nFirst 3000:\n{fullText.Substring(0, Math.Min(3000, fullText.Length))}", "text/plain");
         }
 
         private async Task<string> UploadToAzureAsync(byte[] fileBytes, int studentId, string originalFileName)
@@ -406,6 +407,29 @@ namespace CS_483_CSI_477.Pages
                 new[] { new MySqlParameter("@sid", MySqlDbType.Int32) { Value = studentId } },
                 out _);
 
+            // Map Degree Works block/sub-label names to Progress page requirement categories
+            var blockToCategoryMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Core 39"] = "Core 39 General Education",
+                ["Bachelor of Science Skills Requirement"] = "Core 39 General Education",
+                ["Bachelor of Arts Skills Requirement"] = "Core 39 General Education",
+                ["Embedded Experience"] = "Core 39 General Education",
+                ["Major in Computer Science"] = "CS Core Requirements",
+                ["Major in Computer Information Systems"] = "CS Core Requirements",
+                ["Directed Electives"] = "Directed Electives",
+                ["General Electives"] = "General Electives",
+                ["Advanced Programming"] = "Advanced CS Courses",
+                ["Capstone Project"] = "CS Core Requirements",
+                ["Information Systems"] = "CS Core Requirements",
+                ["Hardware Foundation"] = "CS Core Requirements",
+                ["Mathematics Foundation"] = "CS Core Requirements",
+                ["BACHELOR OF SCIENCE REQUIREMENTS"] = "Core 39 General Education",
+                ["FOUNDATION SKILLS"] = "Core 39 General Education",
+                ["PHYSICAL ACTIVITY AND WELLNESS"] = "Core 39 General Education",
+                ["WAYS OF KNOWING"] = "Core 39 General Education",
+                ["BACHELOR OF ARTS REQUIREMENTS"] = "Core 39 General Education",
+            };
+
             // Load all course codes from DB once to avoid per-course lookups
             var allCoursesSql = "SELECT CourseID, CourseCode FROM Courses WHERE IsActive = 1";
             var allCourses = _dbHelper.ExecuteQuery(allCoursesSql, Array.Empty<MySqlParameter>(), out _);
@@ -424,8 +448,36 @@ namespace CS_483_CSI_477.Pages
                 @"^\s{2}-\s+([A-Z]{2,5}\s+\d+[A-Z]?)\s*\|\s*.+?\s*\|\s*Grade:\s*(\S+)\s*\|\s*(\d+)\s*cr\s*\|\s*((?:First |Second )?(?:Spring|Fall|Summer)\s+\d{4})",
                 RegexOptions.Multiline | RegexOptions.IgnoreCase);
 
-            foreach (Match m in completedRx.Matches(parsedContext))
+            // Parse completed courses tracking current block header
+            string currentCategory = "";
+            bool inCompletedSection = false;
+            foreach (var line in parsedContext.Split('\n'))
             {
+                var trimmed = line.TrimEnd();
+
+                // Only start tracking blocks after the completed courses header
+                if (trimmed.Contains("--- Completed Courses ---"))
+                {
+                    inCompletedSection = true;
+                    continue;
+                }
+
+                if (!inCompletedSection) continue;
+
+                // Stop if we hit the end marker
+                if (trimmed.Contains("=== END DEGREE WORKS TRANSCRIPT ===")) break;
+
+                // Detect block headers in the summary (e.g. "Major in Computer Science:")
+                if (trimmed.EndsWith(":") && !trimmed.StartsWith(" ") && !trimmed.StartsWith("-"))
+                {
+                    var blockName = trimmed.TrimEnd(':').Trim();
+                    currentCategory = blockToCategoryMap.TryGetValue(blockName, out var cat) ? cat : blockName;
+                    continue;
+                }
+
+                var m = completedRx.Match(trimmed);
+                if (!m.Success) continue;
+
                 var courseCode = m.Groups[1].Value.Trim();
                 var grade = m.Groups[2].Value.Trim();
                 var termFull = m.Groups[4].Value.Trim();
@@ -447,20 +499,21 @@ namespace CS_483_CSI_477.Pages
                 string dbGrade = grade.Length > 2 ? grade.Substring(0, 2) : grade;
 
                 var insertSql = @"
-            INSERT INTO StudentCourseHistory
-            (StudentID, CourseID, Grade, Term, AcademicYear, Status)
-            VALUES
-            (@studentId, @courseId, @grade, @term, @academicYear, @status)";
+                    INSERT INTO StudentCourseHistory
+                    (StudentID, CourseID, Grade, Term, AcademicYear, Status, RequirementCategory)
+                    VALUES
+                    (@studentId, @courseId, @grade, @term, @academicYear, @status, @category)";
 
                 _dbHelper.ExecuteNonQuery(insertSql, new[]
                 {
-            new MySqlParameter("@studentId",    MySqlDbType.Int32)   { Value = studentId },
-            new MySqlParameter("@courseId",     MySqlDbType.Int32)   { Value = courseId },
-            new MySqlParameter("@grade",        MySqlDbType.VarChar) { Value = dbGrade },
-            new MySqlParameter("@term",         MySqlDbType.VarChar) { Value = dbTerm },
-            new MySqlParameter("@academicYear", MySqlDbType.Int32)   { Value = academicYear },
-            new MySqlParameter("@status",       MySqlDbType.VarChar) { Value = isInProgress ? "In Progress" : "Completed" }
-        }, out _);
+                    new MySqlParameter("@studentId",    MySqlDbType.Int32)   { Value = studentId },
+                    new MySqlParameter("@courseId",     MySqlDbType.Int32)   { Value = courseId },
+                    new MySqlParameter("@grade",        MySqlDbType.VarChar) { Value = dbGrade },
+                    new MySqlParameter("@term",         MySqlDbType.VarChar) { Value = dbTerm },
+                    new MySqlParameter("@academicYear", MySqlDbType.Int32)   { Value = academicYear },
+                    new MySqlParameter("@status",       MySqlDbType.VarChar) { Value = isInProgress ? "In Progress" : "Completed" },
+                    new MySqlParameter("@category",     MySqlDbType.VarChar) { Value = string.IsNullOrEmpty(currentCategory) ? (object)DBNull.Value : currentCategory }
+                }, out _);
 
                 imported++;
             }
@@ -496,45 +549,209 @@ namespace CS_483_CSI_477.Pages
                     int academicYear = termMatch.Success ? int.Parse(termMatch.Groups[2].Value) : DateTime.Now.Year;
 
                     var insertSql = @"
-                INSERT INTO StudentCourseHistory
-                (StudentID, CourseID, Grade, Term, AcademicYear, Status)
-                VALUES
-                (@studentId, @courseId, @grade, @term, @academicYear, 'In Progress')";
+                        INSERT INTO StudentCourseHistory
+                        (StudentID, CourseID, Grade, Term, AcademicYear, Status, RequirementCategory)
+                        VALUES
+                        (@studentId, @courseId, @grade, @term, @academicYear, 'In Progress', @category)";
 
                     _dbHelper.ExecuteNonQuery(insertSql, new[]
                     {
-                new MySqlParameter("@studentId",    MySqlDbType.Int32)   { Value = studentId },
-                new MySqlParameter("@courseId",     MySqlDbType.Int32)   { Value = courseId },
-                new MySqlParameter("@grade",        MySqlDbType.VarChar) { Value = "IP" },
-                new MySqlParameter("@term",         MySqlDbType.VarChar) { Value = dbTerm },
-                new MySqlParameter("@academicYear", MySqlDbType.Int32)   { Value = academicYear }
-            }, out _);
+                        new MySqlParameter("@studentId",    MySqlDbType.Int32)   { Value = studentId },
+                        new MySqlParameter("@courseId",     MySqlDbType.Int32)   { Value = courseId },
+                        new MySqlParameter("@grade",        MySqlDbType.VarChar) { Value = "IP" },
+                        new MySqlParameter("@term",         MySqlDbType.VarChar) { Value = dbTerm },
+                        new MySqlParameter("@academicYear", MySqlDbType.Int32)   { Value = academicYear },
+                        new MySqlParameter("@category",     MySqlDbType.VarChar) { Value = "CS Core Requirements" }
+                    }, out _);
 
                     imported++;
                 }
             }
 
+            // Post-process: fix Directed Electives category
+            // The Degree Works PDF lists "Directed Electives" as a sub-label within the Major block
+            // We detect this from the raw summary by finding the Directed Electives section
+            FixDirectedElectivesCategory(studentId, parsedContext);
+            FixAdvancedProgrammingCategory(studentId);
+
             return imported;
         }
 
-        // Used by Chat to load transcript context into session if not already loaded
-        public string? LoadTranscriptContextFromDb(int studentId)
-        {
-            var sql = @"
-                SELECT ParsedContextText
-                FROM StudentTranscripts
-                WHERE StudentID = @sid AND IsActive = 1
-                LIMIT 1";
 
-            var result = _dbHelper.ExecuteQuery(sql, new[]
+        private void FixDirectedElectivesCategory(int studentId, string parsedContext)
+        {
+            // Get the student's degree ID
+            var degreeIdSql = @"
+                SELECT dp.DegreeID 
+                FROM Students s
+                JOIN DegreePrograms dp ON s.Major = dp.DegreeName
+                WHERE s.StudentID = @sid LIMIT 1";
+
+            var degreeResult = _dbHelper.ExecuteQuery(degreeIdSql, new[]
             {
                 new MySqlParameter("@sid", MySqlDbType.Int32) { Value = studentId }
             }, out _);
 
-            if (result != null && result.Rows.Count > 0 && result.Rows[0][0] != System.DBNull.Value)
-                return result.Rows[0][0]?.ToString();
+            if (degreeResult == null || degreeResult.Rows.Count == 0) return;
+            var degreeIdVal = degreeResult.Rows[0]["DegreeID"];
+            if (degreeIdVal == DBNull.Value || degreeIdVal == null) return;
+            int degreeId = Convert.ToInt32(degreeIdVal);
 
-            return null;
+            // Get all CourseIDs that ARE in DegreeRequirements for this degree
+            var requiredCoursesSql = @"
+                SELECT CourseID, RequirementCategory FROM DegreeRequirements WHERE DegreeID = @degreeId";
+
+            var requiredResult = _dbHelper.ExecuteQuery(requiredCoursesSql, new[]
+            {
+                new MySqlParameter("@degreeId", MySqlDbType.Int32) { Value = degreeId }
+            }, out _);
+
+            var requiredCourseIds = new HashSet<int>();
+            var directedElectiveIds = new HashSet<int>();
+            if (requiredResult != null)
+            {
+                foreach (System.Data.DataRow r in requiredResult.Rows)
+                {
+                    if (r["CourseID"] == DBNull.Value) continue;
+                    int cid = Convert.ToInt32(r["CourseID"]);
+                    var category = r["RequirementCategory"]?.ToString() ?? "";
+                    requiredCourseIds.Add(cid);
+                    if (category == "Directed Electives")
+                        directedElectiveIds.Add(cid);
+                }
+            }
+
+            if (!requiredCourseIds.Any()) return;
+
+            // Get all courses tagged CS Core Requirements for this student
+            var studentCoursesSql = @"
+                SELECT HistoryID, CourseID 
+                FROM StudentCourseHistory
+                WHERE StudentID = @sid 
+                AND RequirementCategory = 'CS Core Requirements'
+                AND Status = 'Completed'";
+
+            var studentCourses = _dbHelper.ExecuteQuery(studentCoursesSql, new[]
+            {
+                new MySqlParameter("@sid", MySqlDbType.Int32) { Value = studentId }
+            }, out _);
+
+            if (studentCourses == null) return;
+
+            // Update courses that are NOT in the required list to Directed Electives
+            foreach (System.Data.DataRow r in studentCourses.Rows)
+            {
+                if (r["CourseID"] == DBNull.Value || r["HistoryID"] == DBNull.Value) continue;
+                int courseId = Convert.ToInt32(r["CourseID"]);
+                int historyId = Convert.ToInt32(r["HistoryID"]);
+
+                string newCategory;
+                if (directedElectiveIds.Contains(courseId))
+                    newCategory = "Directed Electives";
+                else if (requiredCourseIds.Contains(courseId))
+                    continue; // keep as CS Core Requirements
+                else
+                    newCategory = "General Electives";
+
+                _dbHelper.ExecuteNonQuery(
+                    "UPDATE StudentCourseHistory SET RequirementCategory = @cat WHERE HistoryID = @id",
+                    new[]
+                    {
+                        new MySqlParameter("@cat", MySqlDbType.VarChar) { Value = newCategory },
+                        new MySqlParameter("@id",  MySqlDbType.Int32)   { Value = historyId }
+                    }, out _);
+            }
+
+            // Fix courses that are in DegreeRequirements as CS Core but got tagged as Core 39
+            // because they appear in both Core 39 and Major blocks in the transcript
+            var core39OverrideSql = @"
+                SELECT sch.HistoryID, sch.CourseID, dr.RequirementCategory as DrCategory
+                FROM StudentCourseHistory sch
+                JOIN DegreeRequirements dr ON sch.CourseID = dr.CourseID
+                WHERE sch.StudentID = @sid
+                  AND sch.RequirementCategory = 'Core 39 General Education'
+                  AND dr.DegreeID = @degreeId
+                  AND dr.RequirementCategory NOT IN ('Core 39 General Education', 'Directed Electives')
+                  AND dr.RequirementCategory IS NOT NULL";
+
+            var core39Override = _dbHelper.ExecuteQuery(core39OverrideSql, new[]
+            {
+                new MySqlParameter("@sid",      MySqlDbType.Int32) { Value = studentId },
+                new MySqlParameter("@degreeId", MySqlDbType.Int32) { Value = degreeId }
+            }, out _);
+
+            if (core39Override != null)
+            {
+                foreach (System.Data.DataRow r in core39Override.Rows)
+                {
+                    if (r["HistoryID"] == DBNull.Value) continue;
+                    int historyId = Convert.ToInt32(r["HistoryID"]);
+                    string drCat = r["DrCategory"]?.ToString() ?? "";
+
+                    // Map DegreeRequirements category to Progress category
+                    string newCat = drCat switch
+                    {
+                        "Mathematics Foundation" => "CS Core Requirements",
+                        "Communication" => "CS Core Requirements",
+                        "Hardware Foundation" => "CS Core Requirements",
+                        "Information Systems" => "CS Core Requirements",
+                        "Professional Development" => "CS Core Requirements",
+                        "Capstone Project" => "CS Core Requirements",
+                        "Advanced Programming" => "Advanced CS Courses",
+                        _ => "CS Core Requirements"
+                    };
+
+                    _dbHelper.ExecuteNonQuery(
+                        "UPDATE StudentCourseHistory SET RequirementCategory = @cat WHERE HistoryID = @id",
+                        new[]
+                        {
+                            new MySqlParameter("@cat", MySqlDbType.VarChar) { Value = newCat },
+                            new MySqlParameter("@id",  MySqlDbType.Int32)   { Value = historyId }
+                        }, out _);
+                }
+            }
         }
+
+        private void FixAdvancedProgrammingCategory(int studentId)
+        {
+            // Courses in DegreeRequirements as "Advanced Programming" should be tagged
+            // as "Advanced CS Courses" in StudentCourseHistory
+            var advancedCoursesSql = @"
+                SELECT dr.CourseID
+                FROM DegreeRequirements dr
+                WHERE dr.DegreeID = (
+                    SELECT dp.DegreeID
+                    FROM Students s
+                    JOIN DegreePrograms dp ON s.Major = dp.DegreeName
+                    WHERE s.StudentID = @sid
+                    LIMIT 1
+                )
+                AND dr.RequirementCategory = 'Advanced Programming'";
+
+            var advancedResult = _dbHelper.ExecuteQuery(advancedCoursesSql, new[]
+            {
+                new MySqlParameter("@sid", MySqlDbType.Int32) { Value = studentId }
+            }, out _);
+
+            if (advancedResult == null || advancedResult.Rows.Count == 0) return;
+
+            foreach (System.Data.DataRow r in advancedResult.Rows)
+            {
+                if (r["CourseID"] == DBNull.Value) continue;
+                int courseId = Convert.ToInt32(r["CourseID"]);
+
+                _dbHelper.ExecuteNonQuery(
+                    @"UPDATE StudentCourseHistory 
+                      SET RequirementCategory = 'Advanced CS Courses'
+                      WHERE StudentID = @sid AND CourseID = @courseId
+                      AND RequirementCategory IN ('CS Core Requirements', 'Directed Electives')",
+                    new[]
+                    {
+                        new MySqlParameter("@sid",      MySqlDbType.Int32) { Value = studentId },
+                        new MySqlParameter("@courseId", MySqlDbType.Int32) { Value = courseId }
+                    }, out _);
+            }
+        }
+
     }
 }
