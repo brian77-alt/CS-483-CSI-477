@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using MySql.Data.MySqlClient;
 using System.Security.Cryptography;
 using System.Text;
+using BCrypt.Net;
 
 namespace CS_483_CSI_477.Pages
 {
@@ -12,6 +13,8 @@ namespace CS_483_CSI_477.Pages
     {
         private readonly DatabaseHelper _dbHelper;
         private readonly ILogger<RegisterModel> _logger;
+        private readonly EmailService _emailService;
+        private readonly AuthenticationService _authService;
 
         [BindProperty] public string FirstName { get; set; } = "";
         [BindProperty] public string LastName { get; set; } = "";
@@ -26,12 +29,13 @@ namespace CS_483_CSI_477.Pages
         public string ErrorMessage { get; set; } = "";
         public string SuccessMessage { get; set; } = "";
 
-        public RegisterModel(DatabaseHelper dbHelper, ILogger<RegisterModel> logger)
+        public RegisterModel(DatabaseHelper dbHelper, ILogger<RegisterModel> logger, EmailService emailService, AuthenticationService authService)
         {
             _dbHelper = dbHelper;
             _logger = logger;
+            _emailService = emailService;
+            _authService = authService;
         }
-
         public IActionResult OnGet()
         {
             // Redirect already logged-in users
@@ -41,7 +45,7 @@ namespace CS_483_CSI_477.Pages
             return Page();
         }
 
-        public IActionResult OnPost()
+        public async Task<IActionResult> OnPost()
         {
             // Sanitize inputs
             FirstName = InputSanitizer.SanitizeGeneral(FirstName).Trim();
@@ -166,16 +170,27 @@ namespace CS_483_CSI_477.Pages
 
             _logger.LogInformation("New student registered: {Email}", Email);
 
-            // Redirect to login with success message
-            TempData["RegisterSuccess"] = "Account created successfully! Please sign in.";
+            // Get the new student's ID
+            var idSql = "SELECT StudentID FROM Students WHERE Email = @email LIMIT 1";
+            var idResult = _dbHelper.ExecuteQuery(idSql, new[]
+            {
+                new MySqlParameter("@email", MySqlDbType.VarChar) { Value = Email }
+            }, out _);
+
+            if (idResult != null && idResult.Rows.Count > 0)
+            {
+                int newStudentId = Convert.ToInt32(idResult.Rows[0]["StudentID"]);
+                var token = _authService.CreateEmailVerificationToken(newStudentId);
+                var fullName = $"{FirstName} {LastName}";
+                await _emailService.SendVerificationEmailAsync(Email, fullName, token);
+            }
+            TempData["RegisterSuccess"] = "Account created! Please check your email to verify your account before signing in.";
             return RedirectToPage("/Login");
         }
 
         private static string HashPassword(string password)
         {
-            using var sha256 = SHA256.Create();
-            var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToHexString(bytes).ToLowerInvariant();
+            return BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
         }
     }
 }
