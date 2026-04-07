@@ -1,0 +1,22 @@
+[
+  {
+    "Role": "user",
+    "Content": "what courses should I take next semester?",
+    "Timestamp": "2026-03-07T09:02:51.9292472-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Recommended Next Courses\n## Suggested Schedule (adjust credits based on remaining requirements)\n\n*   **MATH 235** - Calculus II (4 credits)\n*   **CIS 276** - Introduction to Enterprise Web Development (3 credits)\n*   **CIS 30",
+    "Timestamp": "2026-03-07T09:03:02.7419154-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "what about survey of calculus",
+    "Timestamp": "2026-03-07T09:03:23.278995-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "\u0022Survey of Calculus\u0022 is not listed in the provided course catalog. For a Computer Science Major, B.S., after completing MATH 230 Calculus I, the appropriate next course in the mathematics sequence is MATH 235 Calculus II.\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-03-07T09:03:26.9046665-06:00"
+  }
+]

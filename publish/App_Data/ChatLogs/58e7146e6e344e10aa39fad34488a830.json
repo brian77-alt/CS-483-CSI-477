@@ -1,0 +1,22 @@
+[
+  {
+    "Role": "user",
+    "Content": "can i graduate in spring 2027",
+    "Timestamp": "2026-03-16T15:18:51.6243224-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Graduation Check\n## Remaining Required Courses\n*   CS 458: Advanced Programming in C# (3 cr)\n*   CS 483: Senior Software Development Project (3 cr)\n*   BCOM 231: Business Communication (3 cr) (Planned Spring 2027)\n*   CS 365: Operating Systems (3 cr)\n*   CS 379: Programming Languages and Compilers (3 cr)\n*   CS 461: Artificial Intelligence (3 cr)\n*   CS 478: Software Development (3 cr)\n*   CIS 375: Systems Analysis and Design (3 cr)\n*   BCOM 361: Business Career Planning and",
+    "Timestamp": "2026-03-16T15:19:12.3899822-05:00"
+  },
+  {
+    "Role": "user",
+    "Content": "continue",
+    "Timestamp": "2026-03-16T15:19:28.6093153-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Based on your current academic progress, Alex, graduating in Spring 2027 is not feasible.\n\nHere\u0027s why:\n\n*   **Total Credits:** By the end of Spring 2027, you will have accumulated approximately 47 credits (31 completed \u002B 12 in-progress \u002B 4 planned). A total of 120 credits are required for graduation.\n*   **Core 39 Requirements:** You have significant outstanding requirements in the Core 39 curriculum, including:\n    *   Foundations - Composition/Speech (3 credits)\n    *   Ways of Knowing - Social Inquiry (3 credits)\n    *   Ways of Knowing - Moral \u0026 Ethical Reasoning (3 credits)\n    *   Ways of Knowing - Natural Sciences (4 credits)\n    *   Ways of Knowing - Arts \u0026 Humanities (3 credits)\n    *   BS Skills - Social Science (3 credits)\n    *   BS Skills - Quantitative Reasoning (3 credits)\n    *   Embedded Experience - Global (3 credits)\n    *   Embedded Experience - Diversity (3 credits)\n    *   Embedded Experience - Writing (6 credits)\n    *   Macroeconomics (freshman/sophomore) (3 credits)\n*   **Major Requirements:** While specific Computer Science Major, B.S. requirements are not detailed here, it is highly probable that many major-specific courses are still needed beyond your completed and in-progress coursework.\n\nTo plan for graduation, you will need to complete a substantial number of additional courses to fulfill both your Core 39 and major requirements. It is recommended to meet with an academic advisor to create a comprehensive degree plan.",
+    "Timestamp": "2026-03-16T15:19:42.9465776-05:00"
+  }
+]

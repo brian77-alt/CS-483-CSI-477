@@ -1,0 +1,22 @@
+[
+  {
+    "Role": "user",
+    "Content": "can i graduate in spring of 2027",
+    "Timestamp": "2026-03-16T15:08:24.0331355-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Graduation Check\n## Remaining Required Courses\n*   CS 458: Advanced Programming in C# (3 cr)\n*   CS 483: Senior Software Development Project (3 cr)\n*   CS 365: Operating Systems (3 cr)\n*   CS 379: Programming Languages and Compilers (3 cr)\n*   CS 4",
+    "Timestamp": "2026-03-16T15:08:34.4417421-05:00"
+  },
+  {
+    "Role": "user",
+    "Content": "continue, it cut off",
+    "Timestamp": "2026-03-16T15:09:03.5531264-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Okay, Alex, let\u0027s continue outlining your path to graduation.\n\nBased on your completed, in-progress, and planned courses, and assuming a standard Computer Science B.S. curriculum, here are the remaining requirements:\n\n## Remaining Required Courses\n\n*   **CS 458: Advanced Programming in C#** (3 cr)\n*   **CS 483:",
+    "Timestamp": "2026-03-16T15:09:15.4399685-05:00"
+  }
+]

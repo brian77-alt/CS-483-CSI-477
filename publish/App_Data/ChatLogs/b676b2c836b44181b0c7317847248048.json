@@ -1,0 +1,32 @@
+[
+  {
+    "Role": "user",
+    "Content": "What classes should I take next?",
+    "Timestamp": "2026-02-28T23:57:10.3939876-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Answer\nBased on your current progress as a Computer Science Major, focusing on foundational mathematics and introductory information systems courses is recommended.\n\n## Recommended Next Courses\n*   MATH 235 - Calculus II\n*   CIS 201 - Business Processes and Information Systems\n*   CIS 276 - Introduction to Enterprise Web Development\n*   MATH 362 - Linear Algebra\n\n## Suggested Schedule (12\u201315 credits)\n*   MATH 235 - Calculus II (4 credits)\n*   CIS 201 - Business Processes and Information Systems (3 credits)\n*   CIS 276 - Introduction to Enterprise Web Development (3 credits)\n*   MATH 362 - Linear Algebra (3 credits)\n    *   **Total: 13 credits**\n\n## Notes\nThis schedule provides a strong foundation in mathematics essential for computer science and introduces key concepts in information systems and web development. Please verify any prerequisites for these courses.",
+    "Timestamp": "2026-02-28T23:57:17.3424014-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "What other classes can I take?",
+    "Timestamp": "2026-02-28T23:58:18.2189128-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Based on your Computer Science Major requirements and current progress, here are additional classes you can take:\n\n*   **CS 215 - Discrete Structures for Computer Science** (Required Core)\n*   **CS 258 - Introduction to Object-Oriented Programming Using C#** (\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-02-28T23:58:25.497355-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "What general education requirements do I still need?",
+    "Timestamp": "2026-02-28T23:59:00.7302202-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "I cannot determine your remaining general education requirements from the provided information. The course list and bulletin content do not include details on general education categories or which ones you have completed.",
+    "Timestamp": "2026-02-28T23:59:02.4112794-06:00"
+  }
+]

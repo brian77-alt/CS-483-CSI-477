@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "what classes do i need",
+    "Timestamp": "2026-03-08T01:49:00.7086141-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "I\u0027m having trouble processing that right now. Please try again.",
+    "Timestamp": "2026-03-08T01:49:10.1388429-06:00"
+  }
+]

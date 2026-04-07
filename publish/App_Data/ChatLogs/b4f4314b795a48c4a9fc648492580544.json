@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "what classes do i need",
+    "Timestamp": "2026-03-08T01:47:06.1120583-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Answer\n## Recommended Next Courses\n*   CS 365 \u2014 Operating Systems | Credits: 3\n*   CS 379 \u2014 Programming Languages and Compilers | Credits: 3\n*   BCOM 231 \u2014 Business Communication | Credits: 3\n*   CS 458 \u2014 Advanced Programming in C# | Credits: 3\n*   CS 461 \u2014 Artificial Intelligence | Credits: 3\n\n## Suggested Schedule (adjust credits based on remaining requirements)\n**Fall 2027:**\n*   CS 365 \u2014 Operating Systems (3 credits)\n*   CS 379 \u2014 Programming Languages and Compilers (3 credits)\n*   BCOM 231 \u2014 Business Communication (3 credits)\n*   CS 458 \u2014 Advanced Programming in C# (3 credits)\n\n**Spring 2028:**\n*   CS 461 \u2014 Artificial Intelligence (3 credits)\n*   CS 483 \u2014 Senior Software Development Project (3 credits)\n\n## Notes\nYou have 89 credits remaining. The suggested schedule is 12 credits for Fall 2027 and 6 credits for Spring 2028, totaling 18 credits. You will need to take additional courses to reach your 120-credit graduation requirement. Please consult with your advisor to plan the remaining semesters.",
+    "Timestamp": "2026-03-08T01:47:16.8312509-06:00"
+  }
+]

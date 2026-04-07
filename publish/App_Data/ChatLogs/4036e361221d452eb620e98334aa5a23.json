@@ -1,0 +1,42 @@
+[
+  {
+    "Role": "user",
+    "Content": "can you add CS321 to Spring 2027?",
+    "Timestamp": "2026-03-16T15:25:36.6223872-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "\u2705 Added CS 321 to your course planner for Spring 2027.\n\n(Refresh the Planner page to see the update.)",
+    "Timestamp": "2026-03-16T15:25:41.9441427-05:00"
+  },
+  {
+    "Role": "user",
+    "Content": "what else should i take next semester",
+    "Timestamp": "2026-03-16T15:26:07.3570173-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Recommended Next Courses\n*   CS 365: Operating Systems (3 cr)\n*   CS 379: Programming Languages and Compilers (3 cr)\n\n## Suggested Schedule (adjust credits based on remaining requirements)\n**Spring 2027**\n*   BCOM 231: Business Communication (3 cr)\n*   BCOM 361: Business Career Planning and Professional Development (1 cr)\n*   CS 321: Architecture of Digital Computers (3 cr)\n*   CS 365: Operating Systems (3 cr)\n*   CS 379: Programming Languages and Compilers (3 cr)\n**Total: 13 credits**\n\n## Notes\nPlease verify the typical terms offered for CS 365 and CS 379, as this information was not available.",
+    "Timestamp": "2026-03-16T15:26:34.4178153-05:00"
+  },
+  {
+    "Role": "user",
+    "Content": "can you remove CIS321 from spring 2027",
+    "Timestamp": "2026-03-16T15:27:07.9570779-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "\u274C Course code \u0027CIS 321\u0027 not found.",
+    "Timestamp": "2026-03-16T15:27:09.3997012-05:00"
+  },
+  {
+    "Role": "user",
+    "Content": "can you remove CS321 from spring 2027",
+    "Timestamp": "2026-03-16T15:27:41.2317185-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "\u2705 Removed CS 321 from Spring 2027.\n\n(Refresh the Planner page to see the update.)",
+    "Timestamp": "2026-03-16T15:27:43.6947851-05:00"
+  }
+]

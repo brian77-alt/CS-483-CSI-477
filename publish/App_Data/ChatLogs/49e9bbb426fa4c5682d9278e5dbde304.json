@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "help me design a planner for my degree ",
+    "Timestamp": "2026-02-20T20:24:33.0173061-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Hello there! I\u0027d be happy to help you start designing a planner for your degree here at USI. That\u0027s a great first step towards academic success!\n\nTo give you the best possible guidance, I need a little more information. Could you please tell me:\n\n1.  **Which degree program are you interested in?**\n    *   Computer Science Major, B.S. (CS-BS)\n    *   Computer Information Systems Major, B.A./B.S. (CIS-BS)\n2.  **Are you just starting at USI, or do you have some college credits already?** (e.g., a new freshman, a transfer student, or a current USI student looking to switch majors?)\n3.  **Do you have any specific goals for your graduation timeline?** (e.g., aiming for a typical 4-year plan, or perhaps a different pace?)\n\nOnce I have this information, I can help you outline a general structure for your degree plan, keeping in mind the total credits required for your chosen major.",
+    "Timestamp": "2026-02-20T20:24:38.1089081-06:00"
+  }
+]

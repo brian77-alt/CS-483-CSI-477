@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "What general education requirements do I still need",
+    "Timestamp": "2026-03-01T00:16:32.0463969-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Based on your Computer Science Major (B.S.) requirements and the courses you\u0027ve completed, here are the General Education requirements you still need:\n\n*   **Category I: Communication (9 credit hours)**\n    *   ENGL 101 - Rhetoric and Composition I (3 cr)",
+    "Timestamp": "2026-03-01T00:16:39.3182468-06:00"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "Role": "user",
+    "Content": "what is my GPA",
+    "Timestamp": "2026-03-04T15:09:52.4067434-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Your current GPA is 3.52.",
+    "Timestamp": "2026-03-04T15:09:54.784261-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "how many credits am i currently taking",
+    "Timestamp": "2026-03-04T15:10:07.9207591-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "You are currently taking 9 credits.\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-03-04T15:10:10.0984097-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "i need 15 credits",
+    "Timestamp": "2026-03-04T15:10:24.3885276-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "To reach 15 credits, you need to add 6 more credits to your current 9 in-progress credits.\n\nHere are a few options for 6 credits, considering your major and Core 39 requirements:\n\n1.  **MATH 235: Calculus II (4 hrs)**\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-03-04T15:10:32.433895-06:00"
+  }
+]

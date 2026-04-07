@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "How many credits should I take next semester and what classes do you recommend?",
+    "Timestamp": "2026-03-07T09:24:41.6076068-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Answer\nYou should plan to take 12-15 credits next semester. Based on your progress and major requirements, here are some recommended courses.\n\n## Recommended Next Courses\n*   **MATH 235: Calculus II** (4 credits) - This is a direct continuation of Calculus I",
+    "Timestamp": "2026-03-07T09:24:50.416497-06:00"
+  }
+]

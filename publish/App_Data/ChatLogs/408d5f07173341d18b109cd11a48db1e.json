@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "what classes do i need next",
+    "Timestamp": "2026-03-08T01:30:18.5802196-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Recommended Next Courses\n## Suggested Schedule (Spring 2027)\n\n*   **MATH 235** \u2014 Calculus II (4 credits)\n*   **CIS 345** \u2014 Information Systems Security and Risk Management (3 credits)\n*   **CIS 276** \u2014 Introduction to Enterprise Web Development (3 credits)\n*   **ECE 447** \u2014 Embedded Systems Design (3 credits)\n\n**Total Credits: 13**\n\n## Notes\nPlease note that specific term availability for these courses was not provided, so you should verify they are offered in Spring 2027. This schedule focuses on progressing through your Computer Science major requirements.",
+    "Timestamp": "2026-03-08T01:30:33.3044157-06:00"
+  }
+]

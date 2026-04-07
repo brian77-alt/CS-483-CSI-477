@@ -1,0 +1,32 @@
+[
+  {
+    "Role": "user",
+    "Content": "What transfer credits do I have and where did they apply?",
+    "Timestamp": "2026-03-29T01:21:10.057398-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "You have the following transfer credits:\n\n*   **ENG 101 (Rhet\u0026Comp I:Literacy/Self)**: 3 credits, Grade TSC (AP Credit). Applied to Core 39.\n*   **POLS 102 (Intr American Polit)**: 3 credits, Grade TA (Transferred from Ivy Tech Comm Coll-Evansville as POLS101). Applied to Bachelor of Science Skills Requirement.\n*   **ENGR 121 (Drafting \u0026 Annotation)**: 1 credit, Grade TA (Transferred from Ivy Tech Comm Coll-Evansville as DESN113). Applied to Major in Computer Science.\n*   **MATH 112 (Trigonometry)**: 3 credits, Grade TB (Transferred from Ivy Tech Comm Coll-Evansville as MATH137). Applied to Major in Computer Science.\n*   **PSY 201 (Intro to Psychology)**: 3 credits, Grade C (Transferred from Ivy Tech Comm Coll-Evansville as DESN101). Applied to Major in Computer Science.",
+    "Timestamp": "2026-03-29T01:21:14.6124488-05:00"
+  },
+  {
+    "Role": "user",
+    "Content": "What courses have I completed?",
+    "Timestamp": "2026-03-29T01:23:42.2176307-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "You have completed the following courses:\n\n**Bachelor of Science Skills Requirement:**\n*   BIOL 133 (Biological Concepts) - 4 credits, Grade B\n*   PHYS 101 (Intro Physical Sci) - 3 credits, Grade C\n*   POLS 102 (Intr American Polit) - 3 credits, Grade TA (Transfer)\n*   SPAN 101 (Beginning Spanish I) - 3 credits, Grade B\u002B\n\n**Core 39:**\n*   ENG 101 (Rhet\u0026Comp I:Literacy/Self) - 3 credits, Grade TSC (AP Credit)\n*   ENG 201 (Rhet\u0026Comp II:Literacy/World) - 3 credits, Grade C\n*   CMST 101 (Intro to Public Speaking) - 3 credits, Grade B\u002B\n*   MATH 215 (Survey of Calculus) - 3 credits, Grade C\n*   KIN 192 (Concepts of Wellness \u0026 Fitness) - 1 credit, Grade A\n*   UNIV 101 (FYE-Romain College of Business) - 1 credit, Grade A\n*   ENG 185 (Introduction to Film) - 3 credits, Grade C\n*   HIST 101 (The United States to 1877) - 3 credits, Grade A\n*   ECON 208 (Microeconomics) - 3 credits, Grade C\n*   HUM 212 (World Humanities II) - 3 credits, Grade A\n\n**Embedded Experience:**\n*   PHIL 201 (Intro to Ethics) - 3 credits, Grade A\n*   BCOM 231 (Business Communication) - 3 credits, Grade A\n*   HUM 350 (History of Philosophy I) - 3 credits, Grade B\u002B\n\n**Major in Computer Science:**\n*   CS 215 (Discrete Struct for Comp Sci) - 3 credits, Grade A\n*   CS 258 (Intro to Object-Oriented Progr) - 3 credits, Grade A\n*   CS 311 (Data Structures \u0026 Analysis Alg) - 3 credits, Grade A\n*   CS 365 (Operating Systems) - 3 credits, Grade C\u002B\n*   CS 379 (Programming Lang \u0026 Compilers) - 3 credits, Grade A\n*   CS 478 (Software Development) - 3 credits, Grade B\u002B\n*   CIS 375 (System Analysis\u0026Design) - 3 credits, Grade C\u002B\n*   CIS 377 (Database Concepts) - 3 credits, Grade A\n*   ECE 347 (Microcomputer Engineering) - 3 credits, Grade C\u002B\n*   CIS 367 (Data Communications) - 3 credits, Grade C\u002B\n*   CS 358 (Intermediate OOP Using C#) - 3 credits, Grade A\n*   CS 458 (Advanced Programming in C#) - 3 credits, Grade B\u002B\n*   CIS 201 (Business Processes and IS) - 3 credits, Grade B\u002B\n*   CIS 276 (Intro to Enterprise Web Devel) - 3 credits, Grade A\n*   CIS 345 (Info Systems Security/RiskMgmt) - 3 credits, Grade C\n*   CIS 349 (ST:Cyber Policy) - 3 credits, Grade B\n*   ACCT 201 (Accounting Princ I) - 3 credits, Grade B\n*   ACCT 202 (Accounting Princ II) - 3 credits, Grade A\n*   BLAW 263 (Legal Env of Business) - 3 credits, Grade C\u002B\n*   ENGR 121 (Drafting \u0026 Annotation) - 1 credit, Grade TA (Transfer)\n*   HIST 102 (The United States since 1877) - 3 credits, Grade B\n*   MATH 112 (Trigonometry) - 3 credits, Grade TB (Transfer)\n*   MATH 114 (Quantitative Reasoning) - 3 credits, Grade C\u002B\n*   PSY 201 (Intro to Psychology) - 3 credits, Grade C (Transfer)",
+    "Timestamp": "2026-03-29T01:23:47.4218221-05:00"
+  },
+  {
+    "Role": "user",
+    "Content": "What should I take next semester?",
+    "Timestamp": "2026-03-29T01:24:06.1069279-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Suggested Courses\n\nBased on your Degree Works Transcript, you have completed or are currently in progress with all courses required for your Core 39, Bachelor of Science Skills Requirement, and Embedded Experience blocks. You are also currently in progress with several courses for your Major in Computer Science (CS 321, CS 461, CS 483, CIS 346) in Spring 2026.\n\nGiven that you have already accumulated 139 credits (well over the 120 required for your degree) and are completing additional major courses this semester, it appears you may have fulfilled all requirements for your Computer Science Major by the end of Spring 2026.\n\nTherefore, for Fall 2026, you may not",
+    "Timestamp": "2026-03-29T01:24:26.894073-05:00"
+  }
+]

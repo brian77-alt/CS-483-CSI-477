@@ -1,0 +1,17 @@
+[
+  {
+    "Role": "assistant",
+    "Content": "\u2705 Loaded PDF: Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (Bulletin Year: Unknown). Extracted 2 page(s), 3,706 chars. Parsed 1 course item(s) (Required: 1, Electives: 0).",
+    "Timestamp": "2026-02-26T13:03:22.7996821-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "What courses do I need for my CS degree?",
+    "Timestamp": "2026-02-26T13:03:22.8154634-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Hello Alex,\n\nBased on the provided bulletin content for the Computer Science Major (B.S.), here are some of your required courses:\n\n*   MATH 215 - Survey of Calculus (3 credits) OR MATH 230 - Calculus I (4 credits)\n*   BCOM 231 - Business Communication (3 credits) OR ENG 317 - Technical Writing (3 credits)\n*   CS 215 - Discrete Structures for Computer Science (3 credits)\n*   CS 258 - Introduction to Object-Oriented Programming Using C# (3 credits)\n*   CS 311 - Data Structures and Analysis of Algorithms (3 credits)\n*   CS 321 - Architecture (partial course name from bulletin)\n\nPlease note that this is a partial list of the 52-53 required hours for your 64-65 hour major. You have completed 45 of your 120 total credits.\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (Unknown)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (Unknown)\r\n",
+    "Timestamp": "2026-02-26T13:03:28.1332458-06:00"
+  }
+]

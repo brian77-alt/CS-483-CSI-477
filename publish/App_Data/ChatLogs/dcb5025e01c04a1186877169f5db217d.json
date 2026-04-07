@@ -1,0 +1,32 @@
+[
+  {
+    "Role": "user",
+    "Content": "How many credits should I take next semester and what classes do you recommend?",
+    "Timestamp": "2026-03-07T09:25:36.8147081-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Answer\nFor next semester, I recommend you take 13 credits to continue progressing towards your degree.\n\n## Recommended Next Courses\n*   **MATH 235** - Calculus II (4 credits)\n*   **CIS 201** - Business Processes and Information Systems (3 credits)\n*   **CIS 276** - Introduction to Enterprise Web Development (3 credits)\n*   **ARTD 231** - Introduction to Graphic Design (3 credits)\n\n## Suggested Schedule (adjust credits based on remaining requirements)\nThis schedule totals 13 credits and addresses both major requirements and Core 39 needs.\n\n## Notes\nMATH 235 is a direct continuation of your Calculus sequence. CIS 201 and CIS 276 are valuable courses for your Computer Science major. ARTD 231 will fulfill your Core 39 Arts \u0026 Humanities requirement.",
+    "Timestamp": "2026-03-07T09:25:47.3507123-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "What does the CS bulletin actually require?",
+    "Timestamp": "2026-03-07T09:29:22.2343913-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "The Computer Science Major, B.S. requires a total of 120 credits.\n\n**Core Requirements:**\n*   **Mathematics:** MATH 230, MATH 235, MATH 362.\n*   **Computer Science:** CS 215, CS 258, CS 311, CS 358.\n*   **Electrical and Computer Engineering:** ECE 241.\n\n**Major Requirements (beyond core):**\n*   **Computer Science:** CS 377, CS 421, CS 499 (1-3 credits).\n*   **Computer Science Electives:** 9 credits from approved CS courses at the 300-level or above.\n*   **Related Electives:** 6 credits from approved courses in CIS, ECE, MATH, or other related fields.\n\n**Additional Requirements:**\n*   A minimum GPA of 2.0 in all major courses.\n*   Completion of Core 39 requirements.\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-03-07T09:29:25.6191932-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "What are all the required courses for my major?",
+    "Timestamp": "2026-03-07T09:29:34.3753691-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "For your Computer Science Major, B.S., the following courses are required:\n\n**Core Requirements:**\n*   MATH 230 - Calculus I\n*   MATH 235 - Calculus II\n*   MATH 362 - Linear Algebra\n*   CS 215 - Discrete Structures for Computer Science\n*   CS 258 - Introduction to Object-Oriented Programming Using C#\n*   CS 311 - Data Structures and Analysis of Algorithms\n*   CS 358 - Advanced Object-Oriented Programming Using C#\n*   ECE 241 - Digital Logic\n\n**Major Requirements (beyond core):**\n*   CS 377 (Note: The bulletin lists CS 377, but your completed course is CIS 377. Please verify with your advisor if CIS 377 fulfills this requirement.)\n*   CS 421 - Study of Legacy Systems\n*   CS 499 - Projects in Computer Science (1-3 credits)\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-03-07T09:29:37.5034579-06:00"
+  }
+]

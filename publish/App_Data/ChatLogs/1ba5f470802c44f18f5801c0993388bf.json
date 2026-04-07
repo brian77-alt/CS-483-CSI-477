@@ -1,0 +1,22 @@
+[
+  {
+    "Role": "user",
+    "Content": "help me design a planner for my degree ",
+    "Timestamp": "2026-02-18T23:49:17.6440639-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Hello there! I\u0027d be happy to help you start designing a planner for your degree at the University of Southern Indiana (USI). That\u0027s a great first step towards academic success!\n\nTo help me create the most useful planner for you, could you please tell me which degree program you are interested in? We offer:\n\n*   **Computer Science Major, B.S. (CS-BS):** This program requires 64 credits.\n*   **Computer Information Systems Major, B.A./B.S. (CIS-BS):** This program requires 120 credits.\n\nOnce you let me know which major you\u0027re pursuing, we can start discussing core courses, general education requirements, and how to map out your academic journey semester by semester!",
+    "Timestamp": "2026-02-18T23:49:22.2435754-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "Computer Information Systems Major, B.A./B.S. (CIS-BS)",
+    "Timestamp": "2026-02-18T23:49:57.6323312-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Excellent choice! The Computer Information Systems Major, B.A./B.S. (CIS-BS) is a robust program here at USI, designed to prepare you for a wide range of careers in technology and business.\n\nThis program requires a total of **120 credits** for graduation.\n\nTo help you design a comprehensive planner for your CIS-BS degree, we\u0027ll want to consider several key components that make up those 120 credits:\n\n1.  **Major Core Courses:** These are the foundational courses essential to the Computer Information Systems discipline.\n2.  **Major Electives/Concentrations:** Often, CIS programs allow for specialization or electives within the major to tailor it to your interests (e.g., networking, data analytics, software development).\n3.  **General Education Requirements:** All USI students complete a set of general education courses in areas like English, Math, Science, Humanities, and Social Sciences. These ensure a broad educational foundation.\n4.  **Electives:** Any remaining credits needed to reach the 120-credit total can be filled with courses of your interest, minors, or additional major courses.\n\nWhile I don\u0027t have the full, detailed list of specific course names for the CIS-BS program right here, I can certainly help you think about the *structure* of your planner and how to approach it semester by semester.\n\n**Here\u0027s how we can start planning:**\n\n*   **Typical Course Load:** A full-time student generally takes between 12 and 15 credits per semester. To complete 120 credits, this typically means about 8 semesters (or 4 academic years) if you\u0027re taking around 15 credits each Fall and Spring.\n*   **Balancing Courses:** We\u0027ll want to balance your major-specific courses with your general education requirements each semester to ensure you\u0027re making progress on all fronts.\n*   **Prerequisites:** Many courses, especially in a technical field like CIS, have prerequisites. It\u0027s crucial to plan these out to ensure you take courses in the correct sequence.\n\n**To make this planner truly specific to *your* path, the next step would be to consult the official USI Academic Catalog or the program checklist for the CIS-BS major.** This document will list all the required courses for the program.\n\n**Once you have an idea of those specific courses, we can start to map them out! For example, we could discuss:**\n\n*   What a typical first semester might look like for a new student in CIS.\n*   How to integrate any transfer credits you might have.\n*   Strategies for choosing electives or a minor.\n*   How to plan for internships or other experiential learning opportunities.\n\nDo you have access to the USI academic catalog or a program checklist for the CIS-BS major? If not, I can guide you on where to typically find this information on the USI website.",
+    "Timestamp": "2026-02-18T23:50:05.9063668-06:00"
+  }
+]

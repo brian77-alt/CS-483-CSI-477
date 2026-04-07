@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "help me design a planner for my degree",
+    "Timestamp": "2026-02-26T12:23:30.7713171-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "I didn\u2019t find any course listings parsed from the PDF yet. Please upload the bulletin PDF again (must be text-based, not scanned).",
+    "Timestamp": "2026-02-26T12:23:30.7994321-06:00"
+  }
+]

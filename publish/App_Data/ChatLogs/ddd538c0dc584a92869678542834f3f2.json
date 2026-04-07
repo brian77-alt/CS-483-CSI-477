@@ -1,0 +1,92 @@
+[
+  {
+    "Role": "user",
+    "Content": "What general education requirements do I still need",
+    "Timestamp": "2026-03-02T16:09:36.706065-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Based on your Core 39 Requirements Status, you still need to complete the following general education requirements:\n\n*   **Foundations - Composition/Speech:** 3 credits\n*   **Foundations - Mathematics:** 3 credits (Note: MATH 230 fulfills a major requirement, but not the Core 39 Foundations - Mathematics requirement itself, which often requires a specific course type or higher-level math than what\u0027s typically counted here.)\n*   **Ways of Knowing - Social Inquiry:** 3 credits\n*   **Ways of Knowing - Moral \u0026 Ethical Reasoning:** 3 credits\n*   **Ways of Knowing - Natural Sciences:** 4 credits\n*   **Ways of Knowing - Arts \u0026 Humanities:** 3 credits\n*   **BS Skills - Social Science:** 3 credits\n*   **BS Skills - Quantitative Reasoning:** 3 credits\n*   **Embedded Experience - Global:** 3 credits\n*   **Embedded Experience - Diversity:** 3 credits\n*   **Embedded Experience - Writing:** 6 credits\n*   **Macroeconomics (freshman/sophomore):** 3 credits",
+    "Timestamp": "2026-03-02T16:09:39.4546203-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "What classes should I take next?",
+    "Timestamp": "2026-03-02T16:10:13.167225-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Answer\nBased on your Core 39 requirements and the provided course list, you should focus on fulfilling your general education requirements while continuing with your major\u0027s math sequence.\n\n## Recommended Next Courses\n*   MATH 235 (Calculus II)\n*   ARTD 231 (",
+    "Timestamp": "2026-03-02T16:10:23.1941036-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "why",
+    "Timestamp": "2026-03-02T16:10:36.6226605-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "You should take MATH 235 because it is the next course in your Computer Science major\u0027s required math sequence, following your completed MATH 230.\n\nARTD 231 is recommended to fulfill your Core 39 Ways of Knowing - Arts \u0026 Humanities requirement, for which you currently have 0/3 credits.",
+    "Timestamp": "2026-03-02T16:10:41.4220662-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "what if i take survey of calculus",
+    "Timestamp": "2026-03-02T16:11:25.4387695-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "\u0022Survey of Calculus\u0022 is not listed in your provided course catalog.\n\nFor your Computer Science major, you have completed MATH 230 (Calculus I). The next course in your required math sequence is MATH 235 (Calculus II).\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-03-02T16:11:29.3751992-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "what is my GPA",
+    "Timestamp": "2026-03-02T16:12:07.4823847-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Your current GPA is 3.52.",
+    "Timestamp": "2026-03-02T16:12:12.146611-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "what if i take MATH 235 and get an A, what would be my GPA then?",
+    "Timestamp": "2026-03-02T16:12:41.628234-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "If you take MATH 235 (4 credits) and receive an A, your GPA would be approximately 3.63.\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-03-02T16:12:43.9882388-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "what if i switched my major to CIS? what classes would count for that new major",
+    "Timestamp": "2026-03-02T16:14:08.968493-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Answer\nIf you switched to a CIS major, the following completed/in-progress courses would likely count:\n\n*   **CIS 377:** Introduction to Database Concepts\n*   **CS 258:** Introduction to Object-Oriented Programming Using C#\n*   **CS 358:** Advanced Object-Oriented Programming Using C#\n*   **MATH 230:** Calculus I\n*   **CS 311:** Data Structures and Analysis of Algorithms\n\n## Recommended Next Courses\n*   CIS 201\n*   CIS 305\n*   CIS 345\n\n## Suggested Schedule (12\u201315 credits)\n*   CIS 201: Business Processes and Information Systems (3 credits)\n*   CIS 3",
+    "Timestamp": "2026-03-02T16:14:18.5010108-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "expand on that",
+    "Timestamp": "2026-03-02T16:16:01.5233514-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Okay, Alex, if you were to switch your major to Computer Information Systems (CIS), here\u0027s an expanded view of how your current academic progress would translate and what courses you should prioritize next.\n\n## Courses Counting Towards a CIS Major:\n\nBased on typical CIS curriculum structures and the courses you\u0027ve completed or are in progress with, the following would likely count:\n\n*   **CIS 377: Introduction to Database Concepts** (3 hrs) - This is a core CIS course.\n*   **CS 258: Introduction to Object-Oriented Programming Using C#** (3 hrs) - This foundational programming course would likely fulfill a programming requirement.\n*   **CS 358: Advanced Object-Oriented Programming Using C#",
+    "Timestamp": "2026-03-02T16:16:09.6521332-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "continue from here:\u0022Okay, Alex, if you were to switch your major to Computer Information Systems (CIS), here\u0027s an expanded view of how your current academic progress would translate and what courses you should prioritize next.  ## Courses Counting Towards a CIS Major:  Based on typical CIS curriculum structures and the courses you\u0027ve completed or are in progress with, the following would likely count:  *   **CIS 377: Introduction to Database Concepts** (3 hrs) - This is a core CIS course. *   **CS 258: Introduction to Object-Oriented Programming Using C#** (3 hrs) - This foundational programming course would likely fulfill a programming requirement. *   **CS 358: Advanced Object-Oriented Programming Using C#\u0022",
+    "Timestamp": "2026-03-02T16:17:19.152177-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "(3 hrs) - This course directly builds on CS 258 and would fulfill an advanced programming requirement within a CIS curriculum.\n\n*   **CS 311: Data Structures and Analysis of Algorithms** (3 hrs) - While often a core Computer Science course, many CIS programs, especially those with a strong development component, accept or require this course as a technical elective or a core programming component.\n*   **MATH 230: Calculus I** (4 hrs) - This would typically satisfy a mathematics requirement for a Bachelor of Science degree in CIS.\n\n**Courses Less Likely to Directly Count (but may fulfill electives):**\n\n*   **CS 215: Discrete Structures for Computer Science** (3 hrs) - While valuable, this is less commonly a direct core requirement for CIS majors, which tend to focus less on theoretical computer science. It might count as a general elective or a math/science elective depending on the specific CIS program structure.\n*   **ECE 241: Digital Logic** (3 hrs) - This course is generally outside the typical scope of a CIS major, which focuses more on software, systems, and business processes rather than hardware design. It would likely count as a general elective.\n\n**Recommended Next Courses for a CIS Major:**\n\nTo build a strong foundation in CIS, you should prioritize courses that cover business processes, information systems management, and security.\n\n*   **CIS 201: Business Processes and Information Systems** (3 credits) - This is a foundational course for understanding how information systems integrate with business operations.\n*   **CIS 305: Management Information Systems** (3 credits) - This course focuses on the strategic use and management of information systems within organizations.\n*   **CIS 345: Information Systems Security and Risk Management** (3 credits) - Given the importance of cybersecurity, this is a critical course for any CIS professional.\n\n**Suggested Schedule (12-15 credits):**\n\nConsidering your in-progress courses and the need to fill foundational CIS requirements, a possible schedule could be:\n\n*   **CIS 201: Business Processes and Information Systems** (3 credits)\n*   **CIS 305: Management Information Systems** (3 credits)\n*   **CIS 345: Information Systems Security and Risk Management** (3 credits)\n*   *Choose one:*\n    *   **CIS 276: Introduction to Enterprise Web Development** (3 credits) - If you\u0027re interested in web development.\n    *   A general education requirement (e.g., from your Foundations or Ways of Knowing categories) (3 credits)\n    *   An additional CIS elective if available and prerequisites are met.\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-03-02T16:17:27.441112-06:00"
+  }
+]

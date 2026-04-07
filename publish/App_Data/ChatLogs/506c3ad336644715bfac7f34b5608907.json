@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "what classes do i need",
+    "Timestamp": "2026-03-08T01:17:10.0523438-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "I didn\u0027t find any course listings or bulletin content yet. Please upload the bulletin PDF (must be text-based, not scanned).",
+    "Timestamp": "2026-03-08T01:17:10.7181384-06:00"
+  }
+]

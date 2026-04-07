@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "what classes do i need",
+    "Timestamp": "2026-03-08T01:41:06.3875623-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Answer\nBased on your academic progress and remaining requirements, here are some recommended courses for your next semester.\n\n## Recommended Next Courses\n*   BCOM 231 \u2014 Business Communication (3 credits)\n*   CS 365 \u2014 Operating Systems (3 credits)\n*   CS 379 \u2014 Programming Languages and Compilers (3 credits)\n*   CS 458 \u2014 Advanced Programming in C# (3 credits)\n\n## Suggested Schedule (12 credits)\n**Spring 2027**\n*   BCOM 231 \u2014 Business Communication (3 credits) - *Addresses Foundations - Composition/Speech or Embedded Experience - Writing*\n*   CS 365 \u2014 Operating Systems (3 credits) - *Computer Science Major Requirement*\n*   CS 379 \u2014 Programming Languages and Compilers (3 credits) - *Computer Science Major Requirement*\n*   CS 458 \u2014 Advanced Programming in C# (3 credits) - *Computer Science Major Requirement*\n\n## Notes\nPlease verify course availability for Spring 2027, as term data was not provided. This schedule helps you progress in your Computer Science major and addresses some outstanding Core 39 requirements. You will need to address additional Core 39 requirements in future semesters.",
+    "Timestamp": "2026-03-08T01:41:26.889521-06:00"
+  }
+]

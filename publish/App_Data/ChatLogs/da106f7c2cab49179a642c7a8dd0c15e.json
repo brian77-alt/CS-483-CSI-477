@@ -1,0 +1,22 @@
+[
+  {
+    "Role": "user",
+    "Content": "help me design a planner for my degree",
+    "Timestamp": "2026-02-24T12:26:38.6600174-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "I didn\u2019t find any course listings parsed from the PDF yet. Please upload the bulletin PDF again (must be text-based, not scanned).",
+    "Timestamp": "2026-02-24T12:26:38.6687501-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "pull it from the internal CS pdf",
+    "Timestamp": "2026-02-24T12:27:22.799894-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "I didn\u2019t find any course listings parsed from the PDF yet. Please upload the bulletin PDF again (must be text-based, not scanned).",
+    "Timestamp": "2026-02-24T12:27:22.7999664-06:00"
+  }
+]

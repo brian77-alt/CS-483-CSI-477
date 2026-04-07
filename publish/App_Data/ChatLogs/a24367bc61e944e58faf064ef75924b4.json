@@ -1,0 +1,22 @@
+[
+  {
+    "Role": "user",
+    "Content": "What classes should I take next?",
+    "Timestamp": "2026-03-01T14:13:37.741233-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Answer\nAlex, based on your progress and major, focusing on core Computer Science and foundational math courses is recommended.\n\n## Recommended Next Courses\n*   MATH 235 - Calculus II\n*   CIS 276 - Introduction to Enterprise Web Development\n*   MATH 362 -",
+    "Timestamp": "2026-03-01T14:13:47.6598583-06:00"
+  },
+  {
+    "Role": "user",
+    "Content": "what prerequisites do i need",
+    "Timestamp": "2026-03-01T14:15:50.7876106-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Based on the bulletin content and your completed courses:\n\n*   **MATH 235 - Calculus II**: Requires MATH 230. You have completed MATH 230.\n*   **CIS 276 - Introduction to Enterprise Web Development**: Requires CS 258. You have completed CS",
+    "Timestamp": "2026-03-01T14:15:58.4724707-06:00"
+  }
+]

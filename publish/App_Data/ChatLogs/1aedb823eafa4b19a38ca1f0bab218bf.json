@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "help me design a planner for my degree ",
+    "Timestamp": "2026-02-18T17:48:44.3520531-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Hello there! I\u0027d be happy to help you design a planner for your degree here at the University of Southern Indiana. That\u0027s a great step towards academic success!\n\nTo get started and make sure we create the best plan for you, could you please tell me which degree program you\u0027re interested in pursuing? We offer:\n\n1.  **Computer Science Major, B.S. (CS-BS)**\n2.  **Computer Information Systems Major, B.A./B.S. (CIS-BS)**\n\nOnce I know which program you\u0027re aiming for, we can start looking at the requirements and map out your courses. Also, if you have any idea of how many credits you\u0027re looking to take per semester (full-time, part-time), or if you have any transfer credits, that would be helpful to know as well!",
+    "Timestamp": "2026-02-18T17:48:53.5996463-06:00"
+  }
+]

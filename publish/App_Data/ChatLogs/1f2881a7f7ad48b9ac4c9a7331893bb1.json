@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "What general education requirements do I still need?",
+    "Timestamp": "2026-03-01T00:46:18.6857996-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Alex, you still need to complete the following general education requirements:\n\n*   **Foundations:**\n    *   Composition/Speech (3 credits)\n    *   Mathematics (3 credits)\n*   **Ways of Knowing:**\n    *   Social Inquiry (3 credits)\n    *   Moral \u0026 Ethical Reasoning (3 credits)\n    *   Natural Sciences (4 credits)\n    *   Arts \u0026 Humanities (3 credits)\n*   **BS Skills:**\n    *   Social Science (3 credits)\n    *   Quantitative Reasoning (3 credits)\n*   **Embedded Experience:**\n    *   Global (3 credits)\n    *   Diversity (3 credits)\n    *   Writing (6 credits)\n*   **Macroeconomics** (freshman/sophomore level, 3 credits)",
+    "Timestamp": "2026-03-01T00:46:22.1768175-06:00"
+  }
+]

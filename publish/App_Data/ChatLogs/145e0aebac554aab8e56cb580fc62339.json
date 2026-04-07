@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "help me design a planner for my degree ",
+    "Timestamp": "2026-02-23T15:06:37.1599829-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Hello there! I\u0027d be happy to help you start designing a planner for your degree here at USI. That\u0027s a great step towards academic success!\n\nTo give you the most accurate and helpful guidance, could you please tell me **which degree program you are pursuing or interested in?**\n\nFrom the information I have, the available programs are:\n\n*   **Computer Science Major, B.S. (CS-BS)**\n*   **Computer Information Systems Major, B.A./B.S. (CIS-BS)**\n\nOnce I know which program you\u0027re aiming for, we can start looking at the specific courses and credit requirements to build your plan!",
+    "Timestamp": "2026-02-23T15:06:42.8413833-06:00"
+  }
+]

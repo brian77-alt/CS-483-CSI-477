@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "helo",
+    "Timestamp": "2026-03-07T13:02:37.3424398-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "I\u0027m having trouble processing that right now. Please try again.",
+    "Timestamp": "2026-03-07T13:02:38.8367432-06:00"
+  }
+]

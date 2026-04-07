@@ -1,0 +1,52 @@
+[
+  {
+    "Role": "user",
+    "Content": "can I graduate in Spring 2027?",
+    "Timestamp": "2026-03-16T16:04:04.7696018-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Graduation Check\n\n## Remaining Required Courses\n*   CS 458: Advanced Programming in C# (3 cr)\n*   CS 483: Senior Software Development Project (3 cr)\n*   CS 365: Operating Systems (3 cr)\n*   CS 379: Programming Languages and Compilers (3 cr)\n*   CS 461: Artificial Intelligence (3 cr)\n*   CS 478: Software Development (3 cr)\n*   CIS 375: Systems Analysis and Design (3 cr)\n*   Foundations - Composition/Speech (3 credits)\n*   Ways of Knowing - Social Inquiry (3 credits)\n*   Ways of Knowing - Moral \u0026 Ethical Reasoning (3 credits)\n*   Ways of Knowing - Natural Sciences (4 credits)\n*   Ways of Knowing - Arts \u0026 Humanities (3 credits)\n*   BS Skills - Social Science (3 credits)\n*   BS Skills - Quantitative Reasoning (3 credits)\n*   Embedded Experience - Global (3 credits)\n*   Embedded Experience - Diversity (3 credits)\n*   Embedded Experience - Writing (6 credits)\n*   Macroeconomics (freshman/sophomore) (3 credits)\n\n## Credits Summary\n*   Credits completed: 31\n*   Credits in progress (Fall 2026): 12\n*   Credits planned (Spring 2027): 4\n*   Total credits by end of Spring 2027: 47 / 120\n*   Remaining credits needed: 73\n\n## Verdict\nNO\n\n## Notes\nBased on your current progress, in-progress courses, and planned courses, you will have accumulated 47 credits by the end of Spring 2027. A total of 120 credits are required for graduation, meaning you will still need 73 credits. Additionally, several major-specific courses and a significant portion of your Core 39 requirements will remain outstanding.",
+    "Timestamp": "2026-03-16T16:04:18.4768421-05:00"
+  },
+  {
+    "Role": "user",
+    "Content": "what are the requirements for a CIS major",
+    "Timestamp": "2026-03-16T16:11:49.3999214-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Based on the provided information, Alex Thompson is a **Computer Science Major, B.S.**, and the provided catalog content is for the Computer Science Major, B.S.\n\nI do not have the specific requirements for a **CIS major** in the provided bulletin content.\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-03-16T16:11:53.5136639-05:00"
+  },
+  {
+    "Role": "user",
+    "Content": "what are the requirementscomputer information systems major",
+    "Timestamp": "2026-03-16T16:12:45.5957854-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Based on the provided bulletin content and course list, the requirements for a **Computer Information Systems (CIS) major** are not available. The provided information pertains to the **Computer Science Major, B.S.**\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-03-16T16:12:48.7835436-05:00"
+  },
+  {
+    "Role": "user",
+    "Content": "pull from the CIS Bulletin",
+    "Timestamp": "2026-03-16T16:13:09.8561877-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "I am sorry, but the provided bulletin content and course list are for the **Computer Science Major, B.S.**, not for a Computer Information Systems (CIS) major. Therefore, I cannot pull the requirements for a CIS major from the information I have.\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-03-16T16:13:14.0477673-05:00"
+  },
+  {
+    "Role": "user",
+    "Content": "pull from the CIS 2026-2027 bulletin",
+    "Timestamp": "2026-03-16T16:13:45.5966905-05:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "I am sorry, but I do not have access to a \u0022CIS 2026-2027 bulletin.\u0022 The provided catalog content is specifically for the **Computer Science Major, B.S.**, and does not contain the requirements for a Computer Information Systems (CIS) major.\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-03-16T16:13:50.3162518-05:00"
+  }
+]

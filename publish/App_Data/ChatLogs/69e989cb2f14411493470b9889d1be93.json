@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "What general education requirements do I still need?",
+    "Timestamp": "2026-03-01T00:02:44.9015126-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Hello Alex,\n\nBased on the information provided, I do not have a list of your specific completed General Education courses. Therefore, I will list all general education requirements as outlined in the bulletin. Please compare this list with your academic transcript to determine what you still need.\n\nYou still need to fulfill the following General",
+    "Timestamp": "2026-03-01T00:02:52.3072371-06:00"
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "what classes o i need",
+    "Timestamp": "2026-03-08T01:24:03.7596396-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "## Recommended Next Courses\nFor Spring 2026, based on your Computer Science Major, B.S. requirements and courses in progress, here are some recommendations:\n\n## Suggested Schedule (13 credits)\n*   **MATH 235** \u2014 Calculus II (4 credits)\n*   **CIS 201** \u2014 Business Processes and Information Systems (3 credits)\n*   **CIS 276** \u2014 Introduction to Enterprise Web Development (3 credits)\n*   **ECE 447** \u2014 Embedded Systems Design (3 credits)\n\n## Notes\nPlease verify course availability for Spring 2026, as term data was not provided. You should also consult with your academic advisor to ensure these courses align with your specific degree plan and any remaining Core 39 requirements not covered by the provided course list.",
+    "Timestamp": "2026-03-08T01:24:20.2822963-06:00"
+  }
+]

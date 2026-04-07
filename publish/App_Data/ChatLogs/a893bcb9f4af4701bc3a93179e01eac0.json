@@ -1,0 +1,12 @@
+[
+  {
+    "Role": "user",
+    "Content": "What courses do I need for graduation?",
+    "Timestamp": "2026-02-26T17:59:49.3252946-06:00"
+  },
+  {
+    "Role": "assistant",
+    "Content": "Alex, as a Computer Science Major (B.S.), based on the provided bulletin content, you need to complete the following required courses:\n\n*   MATH 215 - Survey of Calculus (3 credits) OR MATH 230 - Calculus I (4 credits)\n*   BCOM 231 - Business Communication (3 credits) OR ENG 317 - Technical Writing (3 credits)\n*   CS 215 - Discrete Structures for Computer Science (3 credits)\n*   CS 258 - Introduction to Object-Oriented Programming Using C# (3 credits)\n*   CS 311 - Data Structures and Analysis of Algorithms (3 credits)\n*   CS 321 - Architecture (course name is truncated in the provided content)\n\nThe bulletin indicates the major requires 64-65 hours total, with 52-53 hours in \u0022Required Courses.\u0022 The list above is a partial set of these required courses, as the provided content is incomplete.\n\n---\r\n**Sources:**\r\n- Page 1 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n- Page 2 of Program_ Computer Science Major, B.S. - University of Southern Indiana.pdf (2025-2026)\r\n",
+    "Timestamp": "2026-02-26T17:59:55.3164624-06:00"
+  }
+]
