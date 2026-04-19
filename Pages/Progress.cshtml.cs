@@ -197,15 +197,43 @@ namespace CS_483_CSI_477.Pages
                         else if (category == "General Electives")
                             GeneralElectiveCredits += credits;
                     }
+                    else if (degreeCode == "NURS-BSN" || degreeCode == "NURS-RNBSN")
+                    {
+                        CoreRequirement1Label = "Nursing Prerequisites";
+                        CoreRequirement1Required = 25;
+                        CoreRequirement2Label = "Nursing Core";
+                        CoreRequirement2Required = 64;
+
+                        if (category == "Nursing Prerequisites") CoreRequirement1Credits += credits;
+                        else if (category == "Nursing Core") CoreRequirement2Credits += credits;
+                        else if (category == "Directed Electives") ElectiveCredits += credits;
+                        else if (category == "General Electives") GeneralElectiveCredits += credits;
+                    }
+                    else if (degreeCode == "ME-BSME" || degreeCode == "CE-BSCE" ||
+                             degreeCode == "EE-BSEE" || degreeCode == "ENGR-BSE" ||
+                             degreeCode == "MFE-BSMFE")
+                    {
+                        CoreRequirement1Label = "Engineering Core";
+                        CoreRequirement1Required = 63;
+                        CoreRequirement2Label = "Mathematics";
+                        CoreRequirement2Required = 11;
+
+                        if (category == "Engineering Core" || category == "ME Core" ||
+                            category == "Science Foundation" || category == "Capstone")
+                            CoreRequirement1Credits += credits;
+                        else if (category == "Mathematics") CoreRequirement2Credits += credits;
+                        else if (category == "Directed Electives") ElectiveCredits += credits;
+                        else if (category == "General Electives") GeneralElectiveCredits += credits;
+                    }
                     else
                     {
-                        CoreRequirement1Label = "Business Core";
-                        CoreRequirement1Required = 34;
-                        CoreRequirement2Label = "CIS Core";
+                        CoreRequirement1Label = "Major Requirements";
+                        CoreRequirement1Required = 30;
+                        CoreRequirement2Label = "Supporting Courses";
                         CoreRequirement2Required = 12;
 
-                        if (category.Contains("Business Core")) CoreRequirement1Credits += credits;
-                        else if (category.Contains("CIS Core")) CoreRequirement2Credits += credits;
+                        if (category.Contains("Core") || category.Contains("Major"))
+                            CoreRequirement1Credits += credits;
                         else if (category == "Directed Electives") ElectiveCredits += credits;
                         else if (category == "General Electives") GeneralElectiveCredits += credits;
                     }

@@ -130,7 +130,10 @@
                         RenderReq(Model.CoreRequirement2Label, Model.CoreRequirement2Credits, Model.CoreRequirement2Required, "green");
                     }
                     @{
-                        RenderReq("Directed Electives", Model.ElectiveCredits, 12, "gold");
+                        @if (Model.ElectiveCredits > 0 || Model.CoreRequirement1Required == 40)
+                        {
+                            RenderReq("Directed Electives", Model.ElectiveCredits, 12, "gold");
+                        }
                         RenderReq("General Electives", Model.GeneralElectiveCredits, 0, "slate");
                     }
                     @{
